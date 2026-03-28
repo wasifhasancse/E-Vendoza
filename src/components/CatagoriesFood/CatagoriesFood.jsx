@@ -1,4 +1,4 @@
-import { use, useMemo } from "react";
+import { use } from "react";
 import {
   FaArrowUp,
   FaBowlFood,
@@ -8,31 +8,35 @@ import {
   FaStar,
 } from "react-icons/fa6";
 
-const CatagoriesFood = ({ manageMenuExplore, selectedCategory }) => {
+const CatagoriesFood = ({
+  manageMenuExplore,
+  selectedCategory,
+  onAddToCart,
+  onToggleFavorite,
+  favoriteItems,
+}) => {
   const data = use(manageMenuExplore);
   const mealsData = data?.meals ?? null;
 
-  // Generate stable random prices (100–2000 Tk) keyed by meal id
-  const priceMap = useMemo(() => {
-    if (!mealsData) return {};
-    return Object.fromEntries(
-      mealsData.map((meal) => [
-        meal.idMeal,
-        Math.floor(Math.random() * 1901) + 100,
-      ]),
-    );
-  }, [mealsData]);
+  // Deterministic pseudo-random values from id (keeps render pure and stable).
+  const hashFromId = (id) => {
+    let hash = 0;
+    for (let i = 0; i < id.length; i += 1) {
+      hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+    }
+    return hash;
+  };
 
-  // Generate stable random ratings (3.5–5.0)
-  const ratingMap = useMemo(() => {
-    if (!mealsData) return {};
-    return Object.fromEntries(
-      mealsData.map((meal) => [
-        meal.idMeal,
-        (Math.random() * 1.5 + 3.5).toFixed(1),
-      ]),
-    );
-  }, [mealsData]);
+  const getMealPrice = (id) => {
+    const hash = hashFromId(id);
+    return (hash % 1901) + 100; // 100-2000
+  };
+
+  const getMealRating = (id) => {
+    const hash = hashFromId(id + "rating");
+    const rating = 3.5 + (hash % 16) / 10; // 3.5-5.0
+    return rating.toFixed(1);
+  };
 
   if (!mealsData) {
     return (
@@ -101,8 +105,11 @@ const CatagoriesFood = ({ manageMenuExplore, selectedCategory }) => {
       {/* Meals grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
         {mealsData.map((meal) => {
-          const price = priceMap[meal.idMeal];
-          const rating = ratingMap[meal.idMeal];
+          const price = getMealPrice(meal.idMeal);
+          const rating = getMealRating(meal.idMeal);
+          const isFavorite = favoriteItems.some(
+            (item) => item.id === meal.idMeal,
+          );
 
           return (
             <article
@@ -116,7 +123,7 @@ const CatagoriesFood = ({ manageMenuExplore, selectedCategory }) => {
                   src={meal.strMealThumb}
                   alt={meal.strMeal}
                   loading="lazy"
-                  className="w-full aspect-[5/4] object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="w-full aspect-5/4 object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 {/* Gradient overlay */}
                 <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(9,14,26,0.72)_0%,transparent_50%)]" />
@@ -176,12 +183,20 @@ const CatagoriesFood = ({ manageMenuExplore, selectedCategory }) => {
 
                   <div className="flex items-center gap-2">
                     <button
-                      className="grid h-9 w-9 place-items-center rounded-xl border border-[#2b3d5e] bg-[rgba(16,24,42,0.7)] text-[#c8d3eb] transition-colors hover:border-[#ff8f6a] hover:text-[#ff8f6a]"
+                      onClick={() => onToggleFavorite(meal, price)}
+                      className={`grid h-9 w-9 place-items-center rounded-xl border bg-[rgba(16,24,42,0.7)] transition-colors ${
+                        isFavorite
+                          ? "border-[#ff8f6a] text-[#ff8f6a]"
+                          : "border-[#2b3d5e] text-[#c8d3eb] hover:border-[#ff8f6a] hover:text-[#ff8f6a]"
+                      }`}
                       aria-label="Add to favorite"
                     >
                       <FaHeart size={13} />
                     </button>
-                    <button className="inline-flex items-center gap-2 rounded-xl bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] px-3 py-2 text-sm font-bold text-[#061510] shadow-[0_6px_18px_rgba(99,230,190,0.28)] transition-all duration-200 hover:shadow-[0_8px_22px_rgba(99,230,190,0.42)] hover:scale-105 active:scale-95">
+                    <button
+                      onClick={() => onAddToCart(meal, price)}
+                      className="inline-flex items-center gap-2 rounded-xl bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] px-3 py-2 text-sm font-bold text-[#061510] shadow-[0_6px_18px_rgba(99,230,190,0.28)] transition-all duration-200 hover:shadow-[0_8px_22px_rgba(99,230,190,0.42)] hover:scale-105 active:scale-95"
+                    >
                       <FaCartShopping size={13} />
                       <span className="hidden sm:inline">Add to Cart</span>
                       <span className="sm:hidden">Add</span>

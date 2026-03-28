@@ -3,7 +3,12 @@ import { FaArrowRightLong } from "react-icons/fa6";
 import CatagoriesFood from "../CatagoriesFood/CatagoriesFood";
 import MenuItemCard from "./MenuItemCard";
 
-const Menu = ({ getCategoriesPromise }) => {
+const Menu = ({
+  getCategoriesPromise,
+  onAddToCart,
+  onToggleFavorite,
+  favoriteItems,
+}) => {
   const getCategoriesData = use(getCategoriesPromise);
   const allCategoriesData = getCategoriesData.categories;
 
@@ -65,6 +70,9 @@ const Menu = ({ getCategoriesPromise }) => {
             <CatagoriesFood
               manageMenuExplore={manageMenuExplore}
               selectedCategory={getSelectedCategory}
+              onAddToCart={onAddToCart}
+              onToggleFavorite={onToggleFavorite}
+              favoriteItems={favoriteItems}
             />
           </Suspense>
         </div>
