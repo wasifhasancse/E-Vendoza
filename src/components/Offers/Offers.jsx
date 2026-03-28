@@ -155,6 +155,7 @@ const Offers = ({ onAddToCart, onBuyNow }) => {
                 key={offer.id}
                 offer={offer}
                 onAddToCart={onAddToCart}
+                onBuyNow={onBuyNow}
                 onViewDetails={(offer) => setSelectedMealId(offer.meal?.idMeal)}
               />
             ))

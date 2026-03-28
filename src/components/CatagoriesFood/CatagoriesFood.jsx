@@ -1,5 +1,6 @@
-import { use } from "react";
+import { use, useState } from "react";
 import {
+  FaArrowRightLong,
   FaArrowUp,
   FaBowlFood,
   FaCartShopping,
@@ -7,16 +8,19 @@ import {
   FaHeart,
   FaStar,
 } from "react-icons/fa6";
+import ViewDetailsModal from "../Offers/ViewDetailsModal";
 
 const CatagoriesFood = ({
   manageMenuExplore,
   selectedCategory,
   onAddToCart,
+  onBuyNow,
   onToggleFavorite,
   favoriteItems,
 }) => {
   const data = use(manageMenuExplore);
   const mealsData = data?.meals ?? null;
+  const [selectedMealId, setSelectedMealId] = useState(null);
 
   // Deterministic pseudo-random values from id (keeps render pure and stable).
   const hashFromId = (id) => {
@@ -36,6 +40,23 @@ const CatagoriesFood = ({
     const hash = hashFromId(id + "rating");
     const rating = 3.5 + (hash % 16) / 10; // 3.5-5.0
     return rating.toFixed(1);
+  };
+
+  const buildCategoryOffer = (meal) => {
+    const price = getMealPrice(meal.idMeal);
+    return {
+      basePrice: price,
+      finalPrice: price,
+      offerLabel: "Category Pick",
+      borderAccent: "#63e6be",
+      glowColor: "rgba(99,230,190,0.34)",
+      cartFood: {
+        idMeal: meal.idMeal,
+        strMeal: meal.strMeal,
+        strMealThumb: meal.strMealThumb,
+      },
+      meal,
+    };
   };
 
   if (!mealsData) {
@@ -114,7 +135,7 @@ const CatagoriesFood = ({
           return (
             <article
               key={meal.idMeal}
-              className="group relative flex flex-col overflow-hidden rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] shadow-[0_12px_30px_rgba(2,8,20,0.32)] transition-all duration-300 hover:-translate-y-2 hover:border-[#3d5480] hover:shadow-[0_24px_44px_rgba(2,8,20,0.54)]"
+              className="group relative flex flex-col overflow-hidden rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] shadow-[0_12px_30px_rgba(2,8,20,0.32)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#3d5480] hover:shadow-[0_18px_34px_rgba(2,8,20,0.48)]"
             >
               <div className="pointer-events-none absolute -left-8 -top-8 h-28 w-28 rounded-full bg-[radial-gradient(circle,rgba(99,230,190,0.1)_0%,transparent_70%)] blur-3xl" />
               {/* Image block */}
@@ -176,17 +197,17 @@ const CatagoriesFood = ({
                 <div className="flex-1" />
 
                 {/* Footer row */}
-                <div className="mt-4 flex items-center justify-between gap-2 pt-3 border-t border-[#1c2b43]">
-                  <div className="flex flex-col">
-                    <span className="text-[0.68rem] font-semibold uppercase tracking-widest text-[#8897b5]">
-                      Price
-                    </span>
-                    <span className="text-[1.1rem] font-black text-[#63e6be]">
-                      ৳{price}
-                    </span>
-                  </div>
+                <div className="mt-4 pt-3 border-t border-[#1c2b43]">
+                  <div className="mb-2.5 flex items-center justify-between gap-2">
+                    <div className="flex flex-col">
+                      <span className="text-[0.68rem] font-semibold uppercase tracking-widest text-[#8897b5]">
+                        Price
+                      </span>
+                      <span className="text-[1.1rem] font-black text-[#63e6be]">
+                        ৳{price}
+                      </span>
+                    </div>
 
-                  <div className="flex items-center gap-2">
                     <button
                       onClick={() => onToggleFavorite(meal, price)}
                       className={`grid h-9 w-9 place-items-center rounded-xl border bg-[rgba(16,24,42,0.7)] transition-colors ${
@@ -198,13 +219,35 @@ const CatagoriesFood = ({
                     >
                       <FaHeart size={13} />
                     </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                     <button
                       onClick={() => onAddToCart(meal, price)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] px-3 py-2 text-sm font-bold text-[#061510] shadow-[0_6px_18px_rgba(99,230,190,0.28)] transition-all duration-200 hover:shadow-[0_8px_22px_rgba(99,230,190,0.42)] hover:scale-105 active:scale-95"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] px-3 py-2.5 text-sm font-bold text-[#061510] shadow-[0_6px_18px_rgba(99,230,190,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_22px_rgba(99,230,190,0.42)]"
                     >
                       <FaCartShopping size={13} />
-                      <span className="hidden sm:inline">Add to Cart</span>
-                      <span className="sm:hidden">Add</span>
+                      Add to Cart
+                    </button>
+
+                    <button
+                      onClick={() => onBuyNow?.(meal, price)}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-[rgba(255,209,102,0.45)] bg-[linear-gradient(135deg,#ffd166,#ffb347)] px-3 py-2.5 text-sm font-black text-[#2a1800] shadow-[0_8px_20px_rgba(255,209,102,0.24)] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-105"
+                    >
+                      Buy Now
+                      <span className="rounded-full bg-[rgba(42,24,0,0.12)] px-2 py-0.5 text-[0.66rem] font-extrabold">
+                        ৳{price}
+                      </span>
+                    </button>
+                  </div>
+
+                  <div className="mt-1.5 flex justify-center">
+                    <button
+                      onClick={() => setSelectedMealId(meal.idMeal)}
+                      className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-[#8897b5] mt-2.5 transition-colors hover:text-[#eef2ff]"
+                    >
+                      View Details
+                      <FaArrowRightLong size={11} />
                     </button>
                   </div>
                 </div>
@@ -213,6 +256,21 @@ const CatagoriesFood = ({
           );
         })}
       </div>
+
+      {selectedMealId && (
+        <ViewDetailsModal
+          idMeal={selectedMealId}
+          offer={(() => {
+            const selectedMeal = mealsData.find(
+              (meal) => meal.idMeal === selectedMealId,
+            );
+            return selectedMeal ? buildCategoryOffer(selectedMeal) : null;
+          })()}
+          onClose={() => setSelectedMealId(null)}
+          onAddToCart={onAddToCart}
+          onBuyNow={onBuyNow}
+        />
+      )}
     </div>
   );
 };

@@ -154,6 +154,7 @@ function App() {
         selectedCategory={selectedCategory}
         onSelectCategory={setSelectedCategory}
         onAddToCart={handleAddToCart}
+        onBuyNow={handleBuyNow}
         onToggleFavorite={handleToggleFavorite}
         favoriteItems={favoriteItems}
       />

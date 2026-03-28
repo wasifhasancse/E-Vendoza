@@ -9,6 +9,7 @@ const Menu = ({
   selectedCategory,
   onSelectCategory,
   onAddToCart,
+  onBuyNow,
   onToggleFavorite,
   favoriteItems,
 }) => {
@@ -89,6 +90,7 @@ const Menu = ({
               manageMenuExplore={manageMenuExplore}
               selectedCategory={effectiveCategory}
               onAddToCart={onAddToCart}
+              onBuyNow={onBuyNow}
               onToggleFavorite={onToggleFavorite}
               favoriteItems={favoriteItems}
             />

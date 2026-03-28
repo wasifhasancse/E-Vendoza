@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaXmark } from "react-icons/fa6";
 
 const ViewDetailsModal = ({
@@ -11,6 +11,8 @@ const ViewDetailsModal = ({
   const [mealData, setMealData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const modalScrollRef = useRef(null);
+  const contentScrollRef = useRef(null);
 
   useEffect(() => {
     const fetchMealDetails = async () => {
@@ -43,16 +45,28 @@ const ViewDetailsModal = ({
     fetchMealDetails();
   }, [idMeal]);
 
+  useEffect(() => {
+    // Always open from top so category and offer detail modals behave identically.
+    modalScrollRef.current?.scrollTo({ top: 0, behavior: "auto" });
+    contentScrollRef.current?.scrollTo({ top: 0, behavior: "auto" });
+  }, [idMeal]);
+
   if (!mealData && !loading) return null;
 
   const meal = mealData;
   const displayMeal = meal || offer?.meal;
 
   return (
-    <div className="fixed inset-0 z-90 overflow-y-auto bg-[rgba(2,8,20,0.8)] backdrop-blur-sm">
-      <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative flex min-h-full items-start justify-center p-3 sm:items-center sm:p-6">
-        <div className="relative mx-auto flex w-full max-w-2xl max-h-[calc(100vh-1.5rem)] flex-col overflow-hidden rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.99),rgba(9,14,27,0.99))] shadow-[0_28px_60px_rgba(2,8,20,0.65)] sm:max-h-[calc(100vh-3rem)]">
+    <div
+      ref={modalScrollRef}
+      className="fixed inset-0 z-9999 overflow-y-auto bg-[rgba(2,8,20,0.8)] backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div className="relative flex min-h-screen items-center justify-center p-3 sm:p-6">
+        <div
+          className="relative mx-auto flex w-full max-w-2xl max-h-[calc(100vh-1.5rem)] flex-col overflow-hidden rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.99),rgba(9,14,27,0.99))] shadow-[0_28px_60px_rgba(2,8,20,0.65)] sm:max-h-[calc(100vh-3rem)]"
+          onClick={(event) => event.stopPropagation()}
+        >
           <button
             onClick={onClose}
             className="absolute right-3 top-3 z-20 grid h-9 w-9 place-items-center rounded-full border border-[#2b3d5e] bg-[rgba(10,16,30,0.7)] text-[#c8d3eb] transition-colors hover:border-[#ff8f6a] hover:text-[#ff8f6a]"
@@ -84,7 +98,10 @@ const ViewDetailsModal = ({
                 />
               </div>
 
-              <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4 sm:p-6">
+              <div
+                ref={contentScrollRef}
+                className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4 sm:p-6"
+              >
                 <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#ff8f6a]">
                   {mealData ? "Meal Details" : "Offer Details"}
                 </p>
@@ -212,7 +229,9 @@ const ViewDetailsModal = ({
                 })()}
 
                 {offer && (
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <div
+                    className={`grid grid-cols-1 gap-2 ${onBuyNow ? "sm:grid-cols-2" : ""}`}
+                  >
                     <button
                       onClick={() => {
                         onAddToCart?.(offer.cartFood, offer.finalPrice, {
@@ -226,28 +245,30 @@ const ViewDetailsModal = ({
                     >
                       Add to Cart
                     </button>
-                    <button
-                      onClick={() => {
-                        onBuyNow?.(offer.cartFood, offer.finalPrice, {
-                          basePrice: offer.basePrice,
-                          offerType: offer.offerType,
-                          offerLabel: offer.offerLabel,
-                        });
-                        onClose();
-                      }}
-                      className="rounded-xl py-2.5 text-xs font-bold text-[#071510] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110"
-                      style={{
-                        background: `linear-gradient(135deg, ${offer.borderAccent}, ${offer.borderAccent}cc)`,
-                        boxShadow: `0 10px 22px ${offer.glowColor}`,
-                      }}
-                    >
-                      <div className="flex flex-col items-center gap-0.5">
-                        <span>Buy Now</span>
-                        <span className="text-[0.65rem] font-black">
-                          Tk {offer.finalPrice}
-                        </span>
-                      </div>
-                    </button>
+                    {onBuyNow && (
+                      <button
+                        onClick={() => {
+                          onBuyNow?.(offer.cartFood, offer.finalPrice, {
+                            basePrice: offer.basePrice,
+                            offerType: offer.offerType,
+                            offerLabel: offer.offerLabel,
+                          });
+                          onClose();
+                        }}
+                        className="rounded-xl py-2.5 text-xs font-bold text-[#071510] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110"
+                        style={{
+                          background: `linear-gradient(135deg, ${offer.borderAccent}, ${offer.borderAccent}cc)`,
+                          boxShadow: `0 10px 22px ${offer.glowColor}`,
+                        }}
+                      >
+                        <div className="flex flex-col items-center gap-0.5">
+                          <span>Buy Now</span>
+                          <span className="text-[0.65rem] font-black">
+                            Tk {offer.finalPrice}
+                          </span>
+                        </div>
+                      </button>
+                    )}
                   </div>
                 )}
               </div>

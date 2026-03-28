@@ -10,7 +10,7 @@ const MenuItemCard = ({ categoriesData, setSelectedCategory, isActive }) => {
     <div>
       <article
         key={categoriesData?.idCategory}
-        className={`relative overflow-hidden rounded-2xl border bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] shadow-[0_12px_30px_rgba(2,8,20,0.32)] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_44px_rgba(2,8,20,0.54)] ${
+        className={`relative overflow-hidden rounded-2xl border bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] shadow-[0_12px_30px_rgba(2,8,20,0.32)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(2,8,20,0.48)] ${
           isActive
             ? "border-[#63e6be] shadow-[0_18px_36px_rgba(99,230,190,0.14)]"
             : "border-[#1c2b43] hover:border-[#3d5480]"
@@ -52,7 +52,7 @@ const MenuItemCard = ({ categoriesData, setSelectedCategory, isActive }) => {
 
           <button
             onClick={manageMenuExplore}
-            className={`mt-3.5 inline-flex items-center gap-2 font-bold transition duration-200 hover:translate-x-1 ${
+            className={`mt-3.5 inline-flex items-center gap-2 font-bold transition duration-200 hover:translate-x-0.5 ${
               isActive
                 ? "text-[#7cecc8]"
                 : "text-[#63e6be] hover:text-[#7cecc8]"

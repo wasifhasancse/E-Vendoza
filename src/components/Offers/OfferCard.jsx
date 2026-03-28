@@ -1,6 +1,6 @@
-import { FaArrowRightLong, FaCartPlus } from "react-icons/fa6";
+import { FaArrowRightLong, FaBagShopping, FaCartPlus } from "react-icons/fa6";
 
-const OfferCard = ({ offer, onAddToCart, onViewDetails }) => {
+const OfferCard = ({ offer, onAddToCart, onBuyNow, onViewDetails }) => {
   const cardMeal = offer.meal ?? {};
 
   const handleAdd = () => {
@@ -12,9 +12,18 @@ const OfferCard = ({ offer, onAddToCart, onViewDetails }) => {
     });
   };
 
+  const handleBuy = () => {
+    if (!offer?.cartFood) return;
+    onBuyNow?.(offer.cartFood, offer.finalPrice, {
+      basePrice: offer.basePrice,
+      offerType: offer.offerType,
+      offerLabel: offer.offerLabel,
+    });
+  };
+
   return (
     <article
-      className="group relative isolate flex flex-col overflow-hidden rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] shadow-[0_12px_30px_rgba(2,8,20,0.32)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_50px_rgba(2,8,20,0.5)]"
+      className="group relative isolate flex flex-col overflow-hidden rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] shadow-[0_12px_30px_rgba(2,8,20,0.32)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(2,8,20,0.46)]"
       style={{ borderTopColor: offer.borderAccent, borderTopWidth: 3 }}
     >
       <div
@@ -71,13 +80,25 @@ const OfferCard = ({ offer, onAddToCart, onViewDetails }) => {
           </div>
         </div>
 
-        <div className="mt-auto grid grid-cols-1 gap-2">
+        <div className="mt-auto grid grid-cols-1 gap-2 sm:grid-cols-2">
           <button
             onClick={handleAdd}
             className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#2b3d5e] bg-[rgba(10,16,30,0.72)] py-2.5 text-xs font-bold text-[#c8d3eb] transition-all duration-200 hover:border-[#63e6be] hover:text-[#63e6be]"
           >
             <FaCartPlus size={12} />
             Add to Cart
+          </button>
+
+          <button
+            onClick={handleBuy}
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-bold text-[#071510] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110"
+            style={{
+              background: `linear-gradient(135deg, ${offer.borderAccent}, ${offer.borderAccent}cc)`,
+              boxShadow: `0 10px 22px ${offer.glowColor}`,
+            }}
+          >
+            <FaBagShopping size={12} />
+            Buy Now
           </button>
         </div>
 
