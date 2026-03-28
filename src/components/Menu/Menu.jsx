@@ -1,10 +1,26 @@
-import { use } from "react";
+import { Suspense, use, useState } from "react";
 import { FaArrowRightLong } from "react-icons/fa6";
 import MenuItemCard from "./MenuItemCard";
+import CatagoriesFood from "../CatagoriesFood/CatagoriesFood";
 
 const Menu = ({ getCategoriesPromise }) => {
   const getCategoriesData = use(getCategoriesPromise);
   const allCategoriesData = getCategoriesData.categories;
+
+  const [getSelectedCategory, setSelectedCategory] = useState(null);
+  const manageMenuExploreData = async () => {
+    const getManageMenuExplorePromise = await fetch(
+      `https://www.themealdb.com/api/json/v1/1/filter.php?c=${getSelectedCategory}`,
+    );
+    // .then((response) => response.json())
+    // .catch((error) => {
+    //   console.error("Error fetching category meals:", error);
+    //   return null;
+    // });
+
+    return await getManageMenuExplorePromise.json();
+  };
+  const manageMenuExplore = manageMenuExploreData();
 
   return (
     <section className="relative py-14 sm:py-16 md:py-20 bg-[radial-gradient(circle_at_10%_8%,#151f35_0%,#0d1426_42%,#090f1c_86%)]">
@@ -31,15 +47,24 @@ const Menu = ({ getCategoriesPromise }) => {
             No categories available right now.
           </div>
         ) : (
-            <div className="mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">{
-              allCategoriesData.map((categoriesData) => (
-                <MenuItemCard
-                  key={categoriesData.idCategory}
-                  categoriesData={categoriesData}
-                />
-              ))}
-            </div>
+          <div className="mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
+            {allCategoriesData.map((categoriesData) => (
+              <MenuItemCard
+                key={categoriesData.idCategory}
+                categoriesData={categoriesData}
+                setSelectedCategory={setSelectedCategory}
+              />
+            ))}
+          </div>
         )}
+
+        <div>
+          <Suspense fallback={<div className='text-center text-2xl font-bold text-red-400 py-2.5 '><span className="loading loading-bars loading-xl"></span></div>}>
+
+            <CatagoriesFood manageMenuExplore={manageMenuExplore} />
+
+          </Suspense>
+        </div>
       </div>
     </section>
   );

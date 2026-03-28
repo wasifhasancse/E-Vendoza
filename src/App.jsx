@@ -7,7 +7,7 @@ import NavBar from './components/NavBar/NavBar'
 
 const getCategoriesPromiseData = async () => {
   const categoriesPromise = await fetch('https://www.themealdb.com/api/json/v1/1/categories.php')
-  return categoriesPromise.json()
+  return await categoriesPromise.json()
 }
 const getCategoriesPromise = getCategoriesPromiseData()
 
