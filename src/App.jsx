@@ -98,7 +98,7 @@ function App() {
         onRemoveFavorite={handleRemoveFavorite}
         onAddToCart={handleAddToCart}
       />
-      <Hero />
+      <Hero onAddToCart={handleAddToCart} />
 
       <Suspense
         fallback={

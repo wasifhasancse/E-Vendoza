@@ -1,5 +1,6 @@
+import { useEffect, useMemo, useState } from "react";
 import { FaClock, FaMotorcycle, FaPlay, FaStar } from "react-icons/fa";
-import { FaBolt, FaLocationDot, FaShieldHalved } from "react-icons/fa6";
+import { FaBolt, FaCartShopping, FaShieldHalved } from "react-icons/fa6";
 
 const STATS = [
   { value: "500+", label: "Restaurants" },
@@ -51,7 +52,95 @@ const HOW_IT_WORKS = [
   },
 ];
 
-const Hero = () => {
+const DEFAULT_HERO_MEALS = [
+  {
+    idMeal: "hero-default-1",
+    strMeal: "Smash Burger",
+    strMealThumb:
+      "https://images.unsplash.com/photo-1687030047982-5217ceaced72?q=80&w=764&auto=format&fit=crop",
+    strCategory: "Fast Food",
+  },
+  {
+    idMeal: "hero-default-2",
+    strMeal: "Creamy Pasta",
+    strMealThumb:
+      "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=400&q=80",
+    strCategory: "Italian",
+  },
+];
+
+const Hero = ({ onAddToCart }) => {
+  const [heroFoods, setHeroFoods] = useState(DEFAULT_HERO_MEALS);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchRandomFood = async () => {
+      try {
+        const [foodOneRes, foodTwoRes] = await Promise.all([
+          fetch("https://www.themealdb.com/api/json/v1/1/random.php"),
+          fetch("https://www.themealdb.com/api/json/v1/1/random.php"),
+        ]);
+        const [foodOneData, foodTwoData] = await Promise.all([
+          foodOneRes.json(),
+          foodTwoRes.json(),
+        ]);
+        const foods = [foodOneData?.meals?.[0], foodTwoData?.meals?.[0]].filter(
+          Boolean,
+        );
+
+        if (isMounted && foods.length > 0) {
+          setHeroFoods(foods);
+        }
+      } catch {
+        // Keep fallback food card content when API fails.
+      }
+    };
+
+    fetchRandomFood();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const getMealPrice = (mealId) => {
+    const id = mealId ?? "hero-default";
+    let hash = 0;
+    for (let i = 0; i < id.length; i += 1) {
+      hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+    }
+    return (hash % 1901) + 100;
+  };
+
+  const getMealDiscount = (mealId) => {
+    const id = mealId ?? "hero-default";
+    let hash = 7;
+    for (let i = 0; i < id.length; i += 1) {
+      hash = (hash * 37 + id.charCodeAt(i)) >>> 0;
+    }
+    return (hash % 21) + 10;
+  };
+
+  const primaryFood = heroFoods[0] ?? DEFAULT_HERO_MEALS[0];
+  const secondaryFood = heroFoods[1] ?? DEFAULT_HERO_MEALS[1];
+
+  const primaryFoodPrice = useMemo(
+    () => getMealPrice(primaryFood?.idMeal),
+    [primaryFood],
+  );
+  const secondaryFoodPrice = useMemo(
+    () => getMealPrice(secondaryFood?.idMeal),
+    [secondaryFood],
+  );
+  const primaryFoodDiscount = useMemo(
+    () => getMealDiscount(primaryFood?.idMeal),
+    [primaryFood],
+  );
+
+  const handleHeroAddToCart = (meal, price) => {
+    if (!onAddToCart || !meal) return;
+    onAddToCart(meal, price);
+  };
   return (
     <section className="relative overflow-hidden bg-[radial-gradient(circle_at_12%_15%,#1b2235_0%,#11182a_36%,#0a0f1c_76%)]">
       {/* ── Background decorations ── */}
@@ -65,9 +154,16 @@ const Hero = () => {
           {/* ── Left — copy ── */}
           <div className="space-y-7">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#2f354a] bg-[#1a2035] px-4 py-2 text-xs font-semibold text-[#ff8f6a] md:text-sm">
-              <FaBolt className="text-[#ffd166]" size={11} />
-              Bangladesh's #1 Food Delivery App
+            <div className="relative inline-flex overflow-hidden rounded-full border border-[#2f354a] bg-[#1a2035] px-4 py-2 text-xs font-semibold text-[#ff8f6a] shadow-[0_0_20px_rgba(255,143,106,0.08)] md:text-sm">
+              <span className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,143,106,0.14),transparent_72%)] animate-pulse" />
+              <span className="relative inline-flex items-center gap-2">
+                <span className="relative flex h-2 w-2 shrink-0">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-[#ff8f6a] opacity-75 animate-ping" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#ffd166]" />
+                </span>
+                <FaBolt className="text-[#ffd166]" size={11} />
+                Bangladesh's #1 Food Delivery App
+              </span>
             </div>
 
             {/* Headline */}
@@ -91,11 +187,20 @@ const Hero = () => {
 
             {/* CTA buttons */}
             <div className="flex flex-wrap items-center gap-4">
-              <button className="btn border-0 rounded-full px-8 py-3 text-[#071510] font-bold bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] shadow-[0_10px_28px_rgba(99,230,190,0.38)] hover:brightness-110 transition-all duration-200">
-                Order Now 🍔
+              <button className="btn relative overflow-hidden border-0 rounded-full px-8 py-3 text-[#071510] font-bold bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] shadow-[0_10px_28px_rgba(99,230,190,0.38)] hover:brightness-110 transition-all duration-200">
+                <span className="absolute inset-0 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.22),transparent)] animate-[pulse_1.8s_ease-in-out_infinite]" />
+                <span className="relative inline-flex items-center gap-2">
+                  <span className="relative flex h-2 w-2 shrink-0">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#071510] opacity-25 animate-ping" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-[#071510]" />
+                  </span>
+                  <span>Order Now</span>
+                  <span>🍔</span>
+                </span>
               </button>
               <button className="inline-flex items-center gap-3 font-semibold text-[#e8ecfa] transition-colors hover:text-[#63e6be]">
-                <span className="grid h-10 w-10 place-items-center rounded-full border border-[#303851] bg-[#1b2133] text-[#ffd166] shadow-md">
+                <span className="relative grid h-10 w-10 place-items-center overflow-hidden rounded-full border border-[#303851] bg-[#1b2133] text-[#ffd166] shadow-md">
+                  <span className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,209,102,0.16),transparent_72%)] animate-pulse" />
                   <FaPlay size={12} />
                 </span>
                 How It Works
@@ -143,7 +248,7 @@ const Hero = () => {
           </div>
 
           {/* ── Right — visual ── */}
-          <div className="relative h-86.25 sm:h-112.5 md:h-130 lg:h-145">
+          <div className="relative h-86 sm:h-112.5 md:h-130 lg:h-145">
             {/* Main blob image — NO animation */}
             <div className="absolute inset-3 overflow-hidden rounded-[46%_54%_56%_44%/_41%_44%_56%_59%] border border-[#27344e] bg-[#1c2538] shadow-[0_34px_72px_rgba(2,8,20,0.55)] sm:max-lg:inset-6 lg:inset-0">
               <img
@@ -155,54 +260,99 @@ const Hero = () => {
             </div>
 
             {/* Live tracking badge — top right */}
-            <div className="absolute right-3 top-3 flex items-center gap-2 rounded-full border border-[#2e3d5a] bg-[rgba(8,14,28,0.9)] px-3 py-1.5 shadow-[0_8px_24px_rgba(2,8,20,0.45)] backdrop-blur-md sm:right-6 sm:top-9">
-              <span className="h-2 w-2 rounded-full bg-[#63e6be] shadow-[0_0_7px_#63e6be]" />
-              <span className="text-[0.72rem] font-bold text-[#d5ddf5]">
-                Live Tracking On
+            <div className="absolute right-3 top-3 overflow-hidden rounded-full border border-[#2e3d5a] bg-[rgba(8,14,28,0.9)] px-3 py-1.5 shadow-[0_8px_24px_rgba(2,8,20,0.45)] backdrop-blur-md sm:right-6 sm:top-9">
+              <span className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,230,190,0.14),transparent_72%)] animate-pulse" />
+              <span className="relative inline-flex items-center gap-2">
+                <span className="relative flex h-2 w-2 shrink-0">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-[#63e6be] opacity-70 animate-ping" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#63e6be] shadow-[0_0_7px_#63e6be]" />
+                </span>
+                <span className="text-[0.72rem] font-bold text-[#d5ddf5]">
+                  Live Tracking On
+                </span>
               </span>
             </div>
 
-            {/* Float card — rider, bottom-left */}
-            <div className="absolute bottom-20 left-3 z-20 flex w-55 min-w-0 items-center gap-2.5 rounded-2xl border border-[#263048] bg-[rgba(9,15,28,0.92)] px-3 py-2.5 shadow-[0_16px_40px_rgba(2,8,20,0.58)] backdrop-blur-md sm:top-auto sm:bottom-16 sm:left-0 sm:right-auto sm:w-auto sm:min-w-57.5 sm:gap-3 sm:px-3.5 sm:py-3 lg:-left-4">
+            {/* Float card — primary food item (all devices) */}
+            <div className="absolute bottom-3 left-1/2 z-30 flex w-[min(17.5rem,calc(100%-1.5rem))] -translate-x-1/2 items-center gap-2.5 rounded-2xl border border-[#263048] bg-[rgba(9,15,28,0.92)] p-2.5 shadow-[0_16px_40px_rgba(2,8,20,0.58)] backdrop-blur-md sm:bottom-4 sm:left-auto sm:right-0 sm:w-60 sm:translate-x-0 sm:gap-3 lg:-right-4">
               <img
-                src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80"
-                alt="Rider"
-                className="h-9 w-9 rounded-full object-cover ring-2 ring-[#63e6be]/30 shrink-0 sm:h-11 sm:w-11"
+                src={
+                  primaryFood?.strMealThumb ||
+                  DEFAULT_HERO_MEALS[0].strMealThumb
+                }
+                alt={primaryFood?.strMeal || "Featured meal"}
+                className="h-14 w-14 shrink-0 rounded-xl object-cover sm:h-15.5 sm:w-15.5"
               />
               <div className="min-w-0">
-                <p className="text-sm font-bold leading-tight text-[#f5f7ff]">
-                  Karim Rahman
+                <p className="text-[0.92rem] font-bold leading-tight text-[#f5f7ff] truncate sm:text-sm">
+                  {primaryFood?.strMeal || "Featured Meal"}
                 </p>
-                <p className="text-[0.68rem] sm:text-xs font-semibold text-[#63e6be] truncate">
-                  Your Rider · 3 min away
+                <p className="text-[0.72rem] text-[#8897b5] truncate sm:text-xs">
+                  {primaryFood?.strCategory || "Chef Special"}
                 </p>
-              </div>
-              <div className="ml-auto grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#63e6be] text-[#071510] sm:h-8 sm:w-8">
-                <FaLocationDot size={13} />
+                <div className="mt-1 flex items-center gap-1.5">
+                  <span className="inline-flex shrink-0 whitespace-nowrap text-[1rem] font-black leading-none text-[#63e6be] sm:text-base">
+                    ৳&nbsp;{primaryFoodPrice}
+                  </span>
+                  <span className="relative inline-flex items-center gap-1 overflow-hidden whitespace-nowrap rounded-full border border-[rgba(255,143,106,0.28)] bg-[rgba(255,143,106,0.14)] px-2 py-0.5 text-[0.58rem] font-bold text-[#ffb08e] shadow-[0_0_18px_rgba(255,143,106,0.16)] sm:text-[0.6rem]">
+                    <span className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,143,106,0.2),transparent_70%)] animate-pulse" />
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="absolute inline-flex h-full w-full rounded-full bg-[#ff8f6a] opacity-75 animate-ping" />
+                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#ffd166]" />
+                    </span>
+                    <span className="relative">{primaryFoodDiscount}% OFF</span>
+                  </span>
+                  <button
+                    onClick={() =>
+                      handleHeroAddToCart(primaryFood, primaryFoodPrice)
+                    }
+                    className="ml-auto grid h-7 w-7 shrink-0 place-items-center rounded-full border border-[#2b3d5e] bg-[rgba(16,24,42,0.72)] text-[#c8d3eb] transition-colors hover:border-[#63e6be] hover:text-[#63e6be] sm:h-6 sm:w-6"
+                    aria-label="Add featured food to cart"
+                  >
+                    <FaCartShopping size={12} />
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Float card — featured item, bottom-right */}
-            <div className="absolute bottom-4 right-3 z-30 flex w-48 min-w-0 items-center gap-2 rounded-2xl border border-[#263048] bg-[rgba(9,15,28,0.92)] p-2 shadow-[0_16px_40px_rgba(2,8,20,0.58)] backdrop-blur-md sm:bottom-4 sm:right-0 sm:min-w-50 sm:w-auto sm:gap-3 sm:p-2.5 lg:-right-4">
+            {/* Float card — secondary food item (large devices only) */}
+            <div className="absolute bottom-20 left-0 z-20 hidden w-60 items-center gap-2.5 rounded-2xl border border-[#263048] bg-[rgba(9,15,28,0.92)] p-2.5 shadow-[0_16px_40px_rgba(2,8,20,0.58)] backdrop-blur-md lg:flex lg:-left-4">
               <img
-                src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=260&q=80"
-                alt="Smash Burger"
-                className="h-12.5 w-12.5 shrink-0 rounded-xl object-cover sm:h-15.5 sm:w-15.5"
+                src={
+                  secondaryFood?.strMealThumb ||
+                  DEFAULT_HERO_MEALS[1].strMealThumb
+                }
+                alt={secondaryFood?.strMeal || "Secondary featured meal"}
+                className="h-13 w-13 shrink-0 rounded-xl object-cover"
               />
               <div className="min-w-0">
-                <p className="text-[0.86rem] sm:text-sm font-bold leading-tight text-[#f5f7ff] truncate">
-                  Smash Burger
+                <p className="max-w-33 truncate text-sm font-bold leading-tight text-[#f5f7ff]">
+                  {secondaryFood?.strMeal || "Chef Pick"}
                 </p>
-                <p className="text-[0.68rem] sm:text-xs text-[#8897b5] truncate">
-                  Extra Cheese 🧀
+                <p className="text-xs text-[#8897b5] truncate">
+                  {secondaryFood?.strCategory || "Special"}
                 </p>
-                <div className="mt-1 flex items-center gap-1 sm:gap-1.5">
-                  <span className="text-[0.95rem] sm:text-base font-black text-[#63e6be]">
-                    ৳ 320
+                <div className="mt-1 flex items-center gap-1.5">
+                  <span className="inline-flex shrink-0 whitespace-nowrap text-sm font-black leading-none text-[#63e6be]">
+                    ৳&nbsp;{secondaryFoodPrice}
                   </span>
-                  <span className="rounded-full bg-[rgba(99,230,190,0.12)] px-1.5 py-0.5 text-[0.56rem] sm:text-[0.6rem] font-bold text-[#63e6be] whitespace-nowrap">
-                    #1 Today
+                  <span className="relative inline-flex items-center gap-1 overflow-hidden whitespace-nowrap rounded-full border border-[rgba(255,143,106,0.3)] bg-[rgba(255,143,106,0.14)] px-2 py-0.5 text-[0.58rem] font-bold uppercase tracking-[0.12em] text-[#ff9f7d] shadow-[0_0_18px_rgba(255,143,106,0.16)]">
+                    <span className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,143,106,0.2),transparent_70%)] animate-pulse" />
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="absolute inline-flex h-full w-full rounded-full bg-[#ff8f6a] opacity-75 animate-ping" />
+                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#ffd166]" />
+                    </span>
+                    <span className="relative">Hot Sell</span>
                   </span>
+                  <button
+                    onClick={() =>
+                      handleHeroAddToCart(secondaryFood, secondaryFoodPrice)
+                    }
+                    className="ml-auto grid h-6 w-6 shrink-0 place-items-center rounded-full border border-[#2b3d5e] bg-[rgba(16,24,42,0.72)] text-[#c8d3eb] transition-colors hover:border-[#63e6be] hover:text-[#63e6be]"
+                    aria-label="Add secondary featured food to cart"
+                  >
+                    <FaCartShopping size={11} />
+                  </button>
                 </div>
               </div>
             </div>

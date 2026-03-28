@@ -20,9 +20,14 @@ const MenuItemCard = ({ categoriesData, setSelectedCategory }) => {
             className="w-full aspect-4/3 object-cover rounded-xl border border-[#1c2b43] bg-[#0d1424]"
             loading="lazy"
           />
-          <span className="absolute left-6 top-6 inline-flex items-center gap-1.5 rounded-full border border-[#2f354a] bg-[#1a2035] px-2.5 py-1 text-[0.72rem] font-bold text-[#d5ddf5]">
-            <FaStar className="text-[#ffd166]" />
-            Top Choice
+          <span className="absolute left-6 top-6 inline-flex items-center gap-1.5 overflow-hidden rounded-full border border-[#2f354a] bg-[#1a2035] px-2.5 py-1 text-[0.72rem] font-bold text-[#d5ddf5] shadow-[0_0_18px_rgba(255,209,102,0.08)]">
+            <span className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,209,102,0.12),transparent_72%)] animate-pulse" />
+            <span className="relative flex h-1.5 w-1.5 shrink-0">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-[#ffd166] opacity-70 animate-ping" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#ff8f6a]" />
+            </span>
+            <FaStar className="relative text-[#ffd166]" />
+            <span className="relative">Top Choice</span>
           </span>
         </div>
 

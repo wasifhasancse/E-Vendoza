@@ -134,9 +134,14 @@ const CatagoriesFood = ({
                 </span>
 
                 {/* Popular badge – top left */}
-                <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-[#2f354a] bg-[#1a2035] px-2.5 py-1 text-[0.7rem] font-bold text-[#ffd166]">
-                  <FaFire className="text-[#ff9a76]" size={10} />
-                  Popular
+                <span className="absolute left-3 top-3 inline-flex items-center gap-1 overflow-hidden rounded-full border border-[#2f354a] bg-[#1a2035] px-2.5 py-1 text-[0.7rem] font-bold text-[#ffd166] shadow-[0_0_18px_rgba(255,143,106,0.1)]">
+                  <span className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,143,106,0.14),transparent_72%)] animate-pulse" />
+                  <span className="relative flex h-1.5 w-1.5 shrink-0">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#ff8f6a] opacity-75 animate-ping" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#ffd166]" />
+                  </span>
+                  <FaFire className="relative text-[#ff9a76]" size={10} />
+                  <span className="relative">Popular</span>
                 </span>
               </div>
 
