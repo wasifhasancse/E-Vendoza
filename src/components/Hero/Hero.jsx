@@ -55,9 +55,9 @@ const Hero = () => {
   return (
     <section className="relative overflow-hidden bg-[radial-gradient(circle_at_12%_15%,#1b2235_0%,#11182a_36%,#0a0f1c_76%)]">
       {/* ── Background decorations ── */}
-      <div className="pointer-events-none absolute -left-[160px] -top-[140px] h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,rgba(99,230,190,0.22)_0%,rgba(99,230,190,0)_70%)] blur-[50px]" />
-      <div className="pointer-events-none absolute -right-[140px] bottom-10 h-[380px] w-[380px] rounded-full bg-[radial-gradient(circle,rgba(255,143,106,0.2)_0%,rgba(255,143,106,0)_70%)] blur-[50px]" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:42px_42px] opacity-30" />
+      <div className="pointer-events-none absolute -left-40 -top-35 h-105 w-105 rounded-full bg-[radial-gradient(circle,rgba(99,230,190,0.22)_0%,rgba(99,230,190,0)_70%)] blur-[50px]" />
+      <div className="pointer-events-none absolute -right-35 bottom-10 h-95 w-95 rounded-full bg-[radial-gradient(circle,rgba(255,143,106,0.2)_0%,rgba(255,143,106,0)_70%)] blur-[50px]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-size-[42px_42px] opacity-30" />
 
       <div className="container relative z-10 mx-auto px-4 md:px-6 lg:px-8 pt-10 md:pt-16 pb-16 md:pb-24">
         {/* ════ HERO ROW ════ */}
@@ -81,7 +81,7 @@ const Hero = () => {
                 <br />
                 To Your Door
               </h1>
-              <p className="max-w-[490px] text-base md:text-lg leading-relaxed text-[#9ba5be]">
+              <p className="max-w-122.5 text-base md:text-lg leading-relaxed text-[#9ba5be]">
                 Order from your favourite local restaurants and get piping-hot
                 meals in as little as{" "}
                 <span className="font-semibold text-[#f5f7ff]">30 minutes</span>
@@ -143,9 +143,9 @@ const Hero = () => {
           </div>
 
           {/* ── Right — visual ── */}
-          <div className="relative h-[390px] sm:h-[450px] md:h-[520px] lg:h-[580px]">
+          <div className="relative h-86.25 sm:h-112.5 md:h-130 lg:h-145">
             {/* Main blob image — NO animation */}
-            <div className="absolute inset-0 overflow-hidden rounded-[46%_54%_56%_44%/_41%_44%_56%_59%] border border-[#27344e] bg-[#1c2538] shadow-[0_34px_72px_rgba(2,8,20,0.55)] max-lg:inset-6">
+            <div className="absolute inset-3 overflow-hidden rounded-[46%_54%_56%_44%/_41%_44%_56%_59%] border border-[#27344e] bg-[#1c2538] shadow-[0_34px_72px_rgba(2,8,20,0.55)] sm:max-lg:inset-6 lg:inset-0">
               <img
                 className="w-full h-full object-cover object-center scale-105"
                 src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1400&q=80"
@@ -155,7 +155,7 @@ const Hero = () => {
             </div>
 
             {/* Live tracking badge — top right */}
-            <div className="absolute right-4 top-6 flex items-center gap-2 rounded-full border border-[#2e3d5a] bg-[rgba(8,14,28,0.9)] px-3 py-1.5 shadow-[0_8px_24px_rgba(2,8,20,0.45)] backdrop-blur-md sm:right-6 sm:top-9">
+            <div className="absolute right-3 top-3 flex items-center gap-2 rounded-full border border-[#2e3d5a] bg-[rgba(8,14,28,0.9)] px-3 py-1.5 shadow-[0_8px_24px_rgba(2,8,20,0.45)] backdrop-blur-md sm:right-6 sm:top-9">
               <span className="h-2 w-2 rounded-full bg-[#63e6be] shadow-[0_0_7px_#63e6be]" />
               <span className="text-[0.72rem] font-bold text-[#d5ddf5]">
                 Live Tracking On
@@ -163,42 +163,44 @@ const Hero = () => {
             </div>
 
             {/* Float card — rider, bottom-left */}
-            <div className="absolute bottom-16 left-0 lg:-left-4 flex min-w-[230px] items-center gap-3 rounded-2xl border border-[#263048] bg-[rgba(9,15,28,0.92)] px-3.5 py-3 shadow-[0_16px_40px_rgba(2,8,20,0.58)] backdrop-blur-md">
+            <div className="absolute bottom-20 left-3 z-20 flex w-55 min-w-0 items-center gap-2.5 rounded-2xl border border-[#263048] bg-[rgba(9,15,28,0.92)] px-3 py-2.5 shadow-[0_16px_40px_rgba(2,8,20,0.58)] backdrop-blur-md sm:top-auto sm:bottom-16 sm:left-0 sm:right-auto sm:w-auto sm:min-w-57.5 sm:gap-3 sm:px-3.5 sm:py-3 lg:-left-4">
               <img
                 src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80"
                 alt="Rider"
-                className="h-11 w-11 rounded-full object-cover ring-2 ring-[#63e6be]/30 shrink-0"
+                className="h-9 w-9 rounded-full object-cover ring-2 ring-[#63e6be]/30 shrink-0 sm:h-11 sm:w-11"
               />
               <div className="min-w-0">
                 <p className="text-sm font-bold leading-tight text-[#f5f7ff]">
                   Karim Rahman
                 </p>
-                <p className="text-xs font-semibold text-[#63e6be]">
+                <p className="text-[0.68rem] sm:text-xs font-semibold text-[#63e6be] truncate">
                   Your Rider · 3 min away
                 </p>
               </div>
-              <div className="ml-auto grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#63e6be] text-[#071510]">
+              <div className="ml-auto grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#63e6be] text-[#071510] sm:h-8 sm:w-8">
                 <FaLocationDot size={13} />
               </div>
             </div>
 
             {/* Float card — featured item, bottom-right */}
-            <div className="absolute bottom-4 right-0 lg:-right-4 flex min-w-[200px] items-center gap-3 rounded-2xl border border-[#263048] bg-[rgba(9,15,28,0.92)] p-2.5 shadow-[0_16px_40px_rgba(2,8,20,0.58)] backdrop-blur-md">
+            <div className="absolute bottom-4 right-3 z-30 flex w-48 min-w-0 items-center gap-2 rounded-2xl border border-[#263048] bg-[rgba(9,15,28,0.92)] p-2 shadow-[0_16px_40px_rgba(2,8,20,0.58)] backdrop-blur-md sm:bottom-4 sm:right-0 sm:min-w-50 sm:w-auto sm:gap-3 sm:p-2.5 lg:-right-4">
               <img
                 src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=260&q=80"
                 alt="Smash Burger"
-                className="h-[62px] w-[62px] shrink-0 rounded-xl object-cover"
+                className="h-12.5 w-12.5 shrink-0 rounded-xl object-cover sm:h-15.5 sm:w-15.5"
               />
-              <div>
-                <p className="text-sm font-bold leading-tight text-[#f5f7ff]">
+              <div className="min-w-0">
+                <p className="text-[0.86rem] sm:text-sm font-bold leading-tight text-[#f5f7ff] truncate">
                   Smash Burger
                 </p>
-                <p className="text-xs text-[#8897b5]">Extra Cheese 🧀</p>
-                <div className="mt-1 flex items-center gap-1.5">
-                  <span className="text-base font-black text-[#63e6be]">
+                <p className="text-[0.68rem] sm:text-xs text-[#8897b5] truncate">
+                  Extra Cheese 🧀
+                </p>
+                <div className="mt-1 flex items-center gap-1 sm:gap-1.5">
+                  <span className="text-[0.95rem] sm:text-base font-black text-[#63e6be]">
                     ৳ 320
                   </span>
-                  <span className="rounded-full bg-[rgba(99,230,190,0.12)] px-1.5 py-0.5 text-[0.6rem] font-bold text-[#63e6be]">
+                  <span className="rounded-full bg-[rgba(99,230,190,0.12)] px-1.5 py-0.5 text-[0.56rem] sm:text-[0.6rem] font-bold text-[#63e6be] whitespace-nowrap">
                     #1 Today
                   </span>
                 </div>
@@ -210,20 +212,20 @@ const Hero = () => {
         {/* ════ HOW IT WORKS ════ */}
         <div className="mt-20 md:mt-28">
           {/* Section header */}
-          <div className="flex items-center gap-5 mb-12">
-            <div className="h-px flex-1 bg-[linear-gradient(to_right,transparent,#243050)]" />
-            <div className="text-center shrink-0">
+          <div className="mb-12 flex flex-col items-center gap-3 md:flex-row md:items-center md:gap-5">
+            <div className="hidden h-px flex-1 bg-[linear-gradient(to_right,transparent,#243050)] md:block" />
+            <div className="text-center max-w-76 sm:max-w-none">
               <p className="text-[#ff8f6a] uppercase tracking-[0.24em] text-xs font-extrabold">
                 How It Works
               </p>
-              <h2 className="mt-2 text-2xl sm:text-3xl md:text-[2.1rem] font-black leading-tight text-[#f5f7ff]">
+              <h2 className="mt-2 text-[1.7rem] sm:text-3xl md:text-[2.1rem] font-black leading-tight text-[#f5f7ff]">
                 Order Food in{" "}
-                <span className="bg-[linear-gradient(130deg,#63e6be,#4dd9ac)] bg-clip-text text-transparent">
+                <span className="block sm:inline bg-[linear-gradient(130deg,#63e6be,#4dd9ac)] bg-clip-text text-transparent">
                   3 Simple Steps
                 </span>
               </h2>
             </div>
-            <div className="h-px flex-1 bg-[linear-gradient(to_left,transparent,#243050)]" />
+            <div className="hidden h-px flex-1 bg-[linear-gradient(to_left,transparent,#243050)] md:block" />
           </div>
 
           {/* Step cards */}

@@ -4,6 +4,7 @@ import {
   FaBowlFood,
   FaCartShopping,
   FaFire,
+  FaHeart,
   FaStar,
 } from "react-icons/fa6";
 
@@ -68,17 +69,17 @@ const CatagoriesFood = ({ manageMenuExplore, selectedCategory }) => {
     <div className="mt-10">
       {/* Section sub-heading */}
       <div className="mb-8">
-        <div className="flex items-center gap-5 mb-4">
-          <div className="h-px flex-1 bg-[linear-gradient(to_right,transparent,#1c2b43)]" />
-          <div className="text-center shrink-0">
+        <div className="mb-4 flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:gap-5">
+          <div className="hidden h-px flex-1 bg-[linear-gradient(to_right,transparent,#1c2b43)] sm:block" />
+          <div className="w-full px-2 text-center sm:w-auto sm:px-0">
             <p className="text-[#ff8f6a] uppercase tracking-[0.24em] text-xs font-extrabold">
               Menu Items
             </p>
-            <h3 className="mt-1 text-[1.5rem] sm:text-[1.9rem] font-black leading-tight text-[#f5f7ff]">
+            <h3 className="mt-1 whitespace-nowrap text-[1.26rem] sm:text-[1.9rem] font-black leading-tight text-[#f5f7ff]">
               {selectedCategory ? (
                 <>
-                  Fresh Picks —{" "}
-                  <span className="bg-[linear-gradient(130deg,#63e6be,#4dd9ac)] bg-clip-text text-transparent">
+                  Fresh Picks —
+                  <span className="ml-1 inline bg-[linear-gradient(130deg,#63e6be,#4dd9ac)] bg-clip-text text-transparent">
                     {selectedCategory}
                   </span>
                 </>
@@ -87,7 +88,7 @@ const CatagoriesFood = ({ manageMenuExplore, selectedCategory }) => {
               )}
             </h3>
           </div>
-          <div className="h-px flex-1 bg-[linear-gradient(to_left,transparent,#1c2b43)]" />
+          <div className="hidden h-px flex-1 bg-[linear-gradient(to_left,transparent,#1c2b43)] sm:block" />
         </div>
         <div className="flex justify-center">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#1c2b43] bg-[rgba(16,24,42,0.7)] px-3 py-1.5 text-sm font-semibold text-[#8897b5]">
@@ -173,10 +174,19 @@ const CatagoriesFood = ({ manageMenuExplore, selectedCategory }) => {
                     </span>
                   </div>
 
-                  <button className="inline-flex items-center gap-2 rounded-xl bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] px-3.5 py-2 text-sm font-bold text-[#061510] shadow-[0_6px_18px_rgba(99,230,190,0.28)] transition-all duration-200 hover:shadow-[0_8px_22px_rgba(99,230,190,0.42)] hover:scale-105 active:scale-95">
-                    <FaCartShopping size={13} />
-                    Add to Cart
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="grid h-9 w-9 place-items-center rounded-xl border border-[#2b3d5e] bg-[rgba(16,24,42,0.7)] text-[#c8d3eb] transition-colors hover:border-[#ff8f6a] hover:text-[#ff8f6a]"
+                      aria-label="Add to favorite"
+                    >
+                      <FaHeart size={13} />
+                    </button>
+                    <button className="inline-flex items-center gap-2 rounded-xl bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] px-3 py-2 text-sm font-bold text-[#061510] shadow-[0_6px_18px_rgba(99,230,190,0.28)] transition-all duration-200 hover:shadow-[0_8px_22px_rgba(99,230,190,0.42)] hover:scale-105 active:scale-95">
+                      <FaCartShopping size={13} />
+                      <span className="hidden sm:inline">Add to Cart</span>
+                      <span className="sm:hidden">Add</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </article>

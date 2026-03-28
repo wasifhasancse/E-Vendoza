@@ -18,8 +18,8 @@ const Menu = ({ getCategoriesPromise }) => {
 
   return (
     <section className="relative overflow-hidden py-14 sm:py-16 md:py-20 bg-[radial-gradient(circle_at_12%_15%,#1b2235_0%,#11182a_36%,#0a0f1c_76%)]">
-      <div className="pointer-events-none absolute -left-[140px] -top-[120px] h-[360px] w-[360px] rounded-full bg-[radial-gradient(circle,rgba(99,230,190,0.14)_0%,rgba(99,230,190,0)_70%)] blur-[50px]" />
-      <div className="pointer-events-none absolute -right-[120px] bottom-8 h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle,rgba(255,143,106,0.12)_0%,rgba(255,143,106,0)_70%)] blur-[50px]" />
+      <div className="pointer-events-none absolute -left-35 -top-30 h-90 w-90 rounded-full bg-[radial-gradient(circle,rgba(99,230,190,0.14)_0%,rgba(99,230,190,0)_70%)] blur-[50px]" />
+      <div className="pointer-events-none absolute -right-30 bottom-8 h-80 w-[320px] rounded-full bg-[radial-gradient(circle,rgba(255,143,106,0.12)_0%,rgba(255,143,106,0)_70%)] blur-[50px]" />
       <div className="container relative z-10 mx-auto px-4 md:px-6 lg:px-8">
         <div className="rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] shadow-[0_16px_36px_rgba(2,8,20,0.35)] p-4 md:p-5">
           <p className="text-[#ff8f6a] tracking-[0.24em] text-xs font-extrabold uppercase">
