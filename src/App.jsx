@@ -1,20 +1,52 @@
-import { Suspense, useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
+import Footer from "./components/Footer/Footer";
 import Hero from "./components/Hero/Hero";
 import Menu from "./components/Menu/Menu";
 import NavBar from "./components/NavBar/NavBar";
-
-const getCategoriesPromiseData = async () => {
-  const categoriesPromise = await fetch(
-    "https://www.themealdb.com/api/json/v1/1/categories.php",
-  );
-  return await categoriesPromise.json();
-};
-const getCategoriesPromise = getCategoriesPromiseData();
+import Offers from "./components/Offers/Offers";
+import Testimonials from "./components/Testimonials/Testimonials";
 
 function App() {
   const [addToCartItems, setAddToCartItems] = useState([]);
   const [favoriteItems, setFavoriteItems] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(
+          "https://www.themealdb.com/api/json/v1/1/categories.php",
+        );
+        const data = await response.json();
+        const nextCategories = data?.categories ?? [];
+
+        if (!isMounted) return;
+
+        setCategories(nextCategories);
+        setSelectedCategory(
+          (prev) => prev ?? nextCategories[0]?.strCategory ?? null,
+        );
+      } catch {
+        if (!isMounted) return;
+        setCategories([]);
+      } finally {
+        if (isMounted) {
+          setCategoriesLoading(false);
+        }
+      }
+    };
+
+    fetchCategories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleAddToCart = (meal, price) => {
     setAddToCartItems((prevItems) => {
@@ -64,6 +96,10 @@ function App() {
     );
   };
 
+  const handleClearCart = () => {
+    setAddToCartItems([]);
+  };
+
   const handleToggleFavorite = (meal, price) => {
     setFavoriteItems((prevItems) => {
       const exists = prevItems.some((item) => item.id === meal.idMeal);
@@ -92,28 +128,30 @@ function App() {
       <NavBar
         addToCartItems={addToCartItems}
         favoriteItems={favoriteItems}
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
         onIncreaseQty={handleIncreaseQty}
         onDecreaseQty={handleDecreaseQty}
         onRemoveItem={handleRemoveItem}
         onRemoveFavorite={handleRemoveFavorite}
         onAddToCart={handleAddToCart}
+        onClearCart={handleClearCart}
       />
       <Hero onAddToCart={handleAddToCart} />
 
-      <Suspense
-        fallback={
-          <div className="flex justify-center py-16 bg-[#0a0f1c]">
-            <span className="loading loading-bars loading-xl text-[#63e6be]"></span>
-          </div>
-        }
-      >
-        <Menu
-          getCategoriesPromise={getCategoriesPromise}
-          onAddToCart={handleAddToCart}
-          onToggleFavorite={handleToggleFavorite}
-          favoriteItems={favoriteItems}
-        />
-      </Suspense>
+      <Menu
+        categories={categories}
+        categoriesLoading={categoriesLoading}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+        onAddToCart={handleAddToCart}
+        onToggleFavorite={handleToggleFavorite}
+        favoriteItems={favoriteItems}
+      />
+      <Offers />
+      <Testimonials />
+      <Footer />
     </>
   );
 }

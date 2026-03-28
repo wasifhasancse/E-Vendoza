@@ -1,28 +1,38 @@
-import { Suspense, use, useState } from "react";
+import { Suspense } from "react";
 import { FaArrowRightLong } from "react-icons/fa6";
 import CatagoriesFood from "../CatagoriesFood/CatagoriesFood";
 import MenuItemCard from "./MenuItemCard";
 
 const Menu = ({
-  getCategoriesPromise,
+  categories,
+  categoriesLoading,
+  selectedCategory,
+  onSelectCategory,
   onAddToCart,
   onToggleFavorite,
   favoriteItems,
 }) => {
-  const getCategoriesData = use(getCategoriesPromise);
-  const allCategoriesData = getCategoriesData.categories;
+  const allCategoriesData = categories ?? [];
+  const effectiveCategory =
+    selectedCategory ?? allCategoriesData[0]?.strCategory ?? null;
 
-  const [getSelectedCategory, setSelectedCategory] = useState(null);
   const manageMenuExploreData = async () => {
+    if (!effectiveCategory) {
+      return { meals: null };
+    }
+
     const getManageMenuExplorePromise = await fetch(
-      `https://www.themealdb.com/api/json/v1/1/filter.php?c=${getSelectedCategory}`,
+      `https://www.themealdb.com/api/json/v1/1/filter.php?c=${effectiveCategory}`,
     );
     return await getManageMenuExplorePromise.json();
   };
   const manageMenuExplore = manageMenuExploreData();
 
   return (
-    <section className="relative overflow-hidden py-14 sm:py-16 md:py-20 bg-[radial-gradient(circle_at_12%_15%,#1b2235_0%,#11182a_36%,#0a0f1c_76%)]">
+    <section
+      id="menu-section"
+      className="relative overflow-hidden py-14 sm:py-16 md:py-20 bg-[radial-gradient(circle_at_12%_15%,#1b2235_0%,#11182a_36%,#0a0f1c_76%)]"
+    >
       <div className="pointer-events-none absolute -left-35 -top-30 h-90 w-90 rounded-full bg-[radial-gradient(circle,rgba(99,230,190,0.14)_0%,rgba(99,230,190,0)_70%)] blur-[50px]" />
       <div className="pointer-events-none absolute -right-30 bottom-8 h-80 w-[320px] rounded-full bg-[radial-gradient(circle,rgba(255,143,106,0.12)_0%,rgba(255,143,106,0)_70%)] blur-[50px]" />
       <div className="container relative z-10 mx-auto px-4 md:px-6 lg:px-8">
@@ -43,7 +53,14 @@ const Menu = ({
           </div>
         </div>
 
-        {allCategoriesData.length === 0 ? (
+        {categoriesLoading ? (
+          <div className="mt-8 rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] p-8 text-center text-[#8897b5] shadow-[0_12px_30px_rgba(2,8,20,0.32)]">
+            <span className="loading loading-bars loading-lg text-[#63e6be]"></span>
+            <p className="mt-3 text-sm font-semibold text-[#c8d3eb]">
+              Loading menu categories...
+            </p>
+          </div>
+        ) : allCategoriesData.length === 0 ? (
           <div className="mt-8 rounded-2xl border border-dashed border-[#1c2b43] p-5 text-center text-[#8897b5]">
             No categories available right now.
           </div>
@@ -53,13 +70,14 @@ const Menu = ({
               <MenuItemCard
                 key={categoriesData.idCategory}
                 categoriesData={categoriesData}
-                setSelectedCategory={setSelectedCategory}
+                setSelectedCategory={onSelectCategory}
+                isActive={effectiveCategory === categoriesData.strCategory}
               />
             ))}
           </div>
         )}
 
-        <div>
+        <div id="menu-items-section">
           <Suspense
             fallback={
               <div className="flex justify-center py-10">
@@ -69,7 +87,7 @@ const Menu = ({
           >
             <CatagoriesFood
               manageMenuExplore={manageMenuExplore}
-              selectedCategory={getSelectedCategory}
+              selectedCategory={effectiveCategory}
               onAddToCart={onAddToCart}
               onToggleFavorite={onToggleFavorite}
               favoriteItems={favoriteItems}

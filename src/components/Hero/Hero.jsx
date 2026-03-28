@@ -142,7 +142,10 @@ const Hero = ({ onAddToCart }) => {
     onAddToCart(meal, price);
   };
   return (
-    <section className="relative overflow-hidden bg-[radial-gradient(circle_at_12%_15%,#1b2235_0%,#11182a_36%,#0a0f1c_76%)]">
+    <section
+      id="hero-section"
+      className="relative overflow-hidden bg-[radial-gradient(circle_at_12%_15%,#1b2235_0%,#11182a_36%,#0a0f1c_76%)]"
+    >
       {/* ── Background decorations ── */}
       <div className="pointer-events-none absolute -left-40 -top-35 h-105 w-105 rounded-full bg-[radial-gradient(circle,rgba(99,230,190,0.22)_0%,rgba(99,230,190,0)_70%)] blur-[50px]" />
       <div className="pointer-events-none absolute -right-35 bottom-10 h-95 w-95 rounded-full bg-[radial-gradient(circle,rgba(255,143,106,0.2)_0%,rgba(255,143,106,0)_70%)] blur-[50px]" />
@@ -360,7 +363,7 @@ const Hero = ({ onAddToCart }) => {
         </div>
 
         {/* ════ HOW IT WORKS ════ */}
-        <div className="mt-20 md:mt-28">
+        <div id="how-it-works-section" className="mt-20 md:mt-28">
           {/* Section header */}
           <div className="mb-12 flex flex-col items-center gap-3 md:flex-row md:items-center md:gap-5">
             <div className="hidden h-px flex-1 bg-[linear-gradient(to_right,transparent,#243050)] md:block" />
