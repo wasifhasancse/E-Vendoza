@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { FaXmark } from "react-icons/fa6";
 
 const ViewDetailsModal = ({
@@ -52,11 +53,12 @@ const ViewDetailsModal = ({
   }, [idMeal]);
 
   if (!mealData && !loading) return null;
+  if (typeof document === "undefined") return null;
 
   const meal = mealData;
   const displayMeal = meal || offer?.meal;
 
-  return (
+  return createPortal(
     <div
       ref={modalScrollRef}
       className="fixed inset-0 z-9999 overflow-y-auto bg-[rgba(2,8,20,0.8)] backdrop-blur-sm"
@@ -64,7 +66,7 @@ const ViewDetailsModal = ({
     >
       <div className="relative flex min-h-screen items-center justify-center p-3 sm:p-6">
         <div
-          className="relative mx-auto flex w-full max-w-2xl max-h-[calc(100vh-1.5rem)] flex-col overflow-hidden rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.99),rgba(9,14,27,0.99))] shadow-[0_28px_60px_rgba(2,8,20,0.65)] sm:max-h-[calc(100vh-3rem)]"
+          className="relative mx-auto flex w-full max-w-2xl max-h-[calc(100vh-5rem)] flex-col overflow-hidden rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.99),rgba(9,14,27,0.99))] shadow-[0_28px_60px_rgba(2,8,20,0.65)] sm:max-h-[calc(100vh-6rem)]"
           onClick={(event) => event.stopPropagation()}
         >
           <button
@@ -276,7 +278,8 @@ const ViewDetailsModal = ({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

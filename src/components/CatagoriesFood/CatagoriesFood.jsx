@@ -59,6 +59,13 @@ const CatagoriesFood = ({
     };
   };
 
+  const categoryOffers = (mealsData ?? []).map((meal) =>
+    buildCategoryOffer(meal),
+  );
+  const selectedCategoryOffer = categoryOffers.find(
+    (offer) => offer.meal?.idMeal === selectedMealId,
+  );
+
   if (!mealsData) {
     return (
       <div className="mt-10 relative overflow-hidden flex flex-col items-center gap-5 rounded-2xl border border-dashed border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] py-16 text-center shadow-[0_12px_30px_rgba(2,8,20,0.32)]">
@@ -260,12 +267,7 @@ const CatagoriesFood = ({
       {selectedMealId && (
         <ViewDetailsModal
           idMeal={selectedMealId}
-          offer={(() => {
-            const selectedMeal = mealsData.find(
-              (meal) => meal.idMeal === selectedMealId,
-            );
-            return selectedMeal ? buildCategoryOffer(selectedMeal) : null;
-          })()}
+          offer={selectedCategoryOffer}
           onClose={() => setSelectedMealId(null)}
           onAddToCart={onAddToCart}
           onBuyNow={onBuyNow}
