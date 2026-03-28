@@ -19,7 +19,7 @@ function App() {
       <NavBar />
       <Hero />
 
-      <Suspense fallback={<div className='text-center text-2xl font-bold text-[#1f2435] py-20'>Loading...</div>}>
+      <Suspense fallback={<div className='text-center text-2xl font-bold text-red-400 py-2.5 '><span className="loading loading-bars loading-xl"></span></div>}>
         <Menu getCategoriesPromise={getCategoriesPromise} />
       </Suspense>
 
