@@ -48,28 +48,36 @@ function App() {
     };
   }, []);
 
-  const handleAddToCart = (meal, price) => {
+  const handleAddToCart = (meal, price, meta = {}) => {
     setAddToCartItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.id === meal.idMeal);
+      const cartId = meta.cartId ?? meal.idMeal;
+      const existingItem = prevItems.find((item) => item.id === cartId);
       if (existingItem) {
         return prevItems.map((item) =>
-          item.id === meal.idMeal
-            ? { ...item, quantity: item.quantity + 1 }
-            : item,
+          item.id === cartId ? { ...item, quantity: item.quantity + 1 } : item,
         );
       }
 
       return [
         ...prevItems,
         {
-          id: meal.idMeal,
+          id: cartId,
           name: meal.strMeal,
           image: meal.strMealThumb,
           price,
+          basePrice: meta.basePrice ?? price,
+          offerType: meta.offerType ?? null,
+          offerLabel: meta.offerLabel ?? null,
           quantity: 1,
         },
       ];
     });
+  };
+
+  const handleBuyNow = (meal, price, meta = {}) => {
+    handleAddToCart(meal, price, meta);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.dispatchEvent(new CustomEvent("open-cart-panel"));
   };
 
   const handleIncreaseQty = (id) => {
@@ -149,7 +157,7 @@ function App() {
         onToggleFavorite={handleToggleFavorite}
         favoriteItems={favoriteItems}
       />
-      <Offers />
+      <Offers onAddToCart={handleAddToCart} onBuyNow={handleBuyNow} />
       <Testimonials />
       <Footer />
     </>

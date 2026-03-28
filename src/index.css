@@ -1,2 +1,140 @@
+@import url("https://fonts.googleapis.com/css2?family=Just+Me+Again+Down+Here&display=swap");
 @import "tailwindcss";
 @plugin "daisyui";
+
+.developer-signature {
+  font-family: "Just Me Again Down Here", cursive;
+  font-size: clamp(1.9rem, 3vw, 2.8rem);
+  letter-spacing: 0.05em;
+  line-height: 0.95;
+  background: linear-gradient(120deg, #63e6be, #ffd166, #ff8f6a, #63e6be);
+  background-size: 260% 260%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow:
+    0 0 18px rgba(99, 230, 190, 0.26),
+    0 0 26px rgba(255, 209, 102, 0.16);
+  animation:
+    signature-float 3.2s ease-in-out infinite,
+    signature-shimmer 6s linear infinite,
+    signature-glow 3.8s ease-in-out infinite;
+}
+
+.developer-signature-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.developer-signature-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: min(100%, 24rem);
+}
+
+.developer-signature-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    rgba(99, 230, 190, 0),
+    rgba(99, 230, 190, 0.48),
+    rgba(255, 143, 106, 0)
+  );
+}
+
+.developer-signature-shell {
+  position: relative;
+  padding: 0.2rem 1.6rem 0.6rem;
+}
+
+.developer-signature-shell::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 0.05rem;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #63e6be, #ffd166, #ff8f6a);
+  box-shadow: 0 0 16px rgba(99, 230, 190, 0.24);
+  transform-origin: center;
+  animation: signature-underline 2.8s ease-in-out infinite;
+}
+
+.developer-signature-spark {
+  position: absolute;
+  top: 52%;
+  color: #ffd166;
+  font-size: 0.8rem;
+  opacity: 0.65;
+  text-shadow: 0 0 10px rgba(255, 209, 102, 0.45);
+  animation: signature-spark 2.4s ease-in-out infinite;
+}
+
+.developer-signature-spark-left {
+  left: 0.2rem;
+}
+
+.developer-signature-spark-right {
+  right: 0.2rem;
+  animation-delay: 1.2s;
+}
+
+@keyframes signature-float {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(-0.8deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(0.8deg);
+  }
+}
+
+@keyframes signature-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 240% 50%;
+  }
+}
+
+@keyframes signature-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 8px rgba(99, 230, 190, 0.18));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgba(255, 209, 102, 0.26));
+  }
+}
+
+@keyframes signature-underline {
+  0%,
+  100% {
+    transform: scaleX(0.88);
+    opacity: 0.62;
+  }
+  50% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+@keyframes signature-spark {
+  0%,
+  100% {
+    transform: translateY(-50%) scale(0.85) rotate(0deg);
+    opacity: 0.42;
+  }
+  50% {
+    transform: translateY(-64%) scale(1.15) rotate(20deg);
+    opacity: 0.95;
+  }
+}

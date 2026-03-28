@@ -138,21 +138,21 @@ const Footer = () => {
 
             {/* Social icons */}
             <div className="flex items-center gap-2 pt-1">
-              {SOCIAL_LINKS.map(({ Icon: SocialIcon, label, href, color }) => (
+              {SOCIAL_LINKS.map((social) => (
                 <a
-                  key={label}
-                  href={href}
-                  aria-label={label}
+                  key={social.label}
+                  href={social.href}
+                  aria-label={social.label}
                   className="grid h-8 w-8 place-items-center rounded-lg border border-[#1c2b43] bg-[rgba(10,16,30,0.7)] text-[#8897b5] transition-all duration-200 hover:-translate-y-0.5 hover:border-transparent hover:text-white"
-                  style={{ "--hover-color": color }}
+                  style={{ "--hover-color": social.color }}
                   onMouseEnter={(e) =>
-                    (e.currentTarget.style.background = color + "22")
+                    (e.currentTarget.style.background = social.color + "22")
                   }
                   onMouseLeave={(e) =>
                     (e.currentTarget.style.background = "rgba(10,16,30,0.7)")
                   }
                 >
-                  <SocialIcon size={14} />
+                  <social.Icon size={14} />
                 </a>
               ))}
             </div>
@@ -205,6 +205,28 @@ const Footer = () => {
             </span>
             <span className="text-xs text-[#5e6f94]">
               All systems operational
+            </span>
+          </div>
+        </div>
+
+        <div className="developer-signature-wrap pb-8 pt-1 text-center">
+          <div className="developer-signature-row">
+            <span className="developer-signature-line" />
+            <p className="text-[0.68rem] uppercase tracking-[0.2em] text-[#5e6f94]">
+              Developer
+            </p>
+            <span className="developer-signature-line" />
+          </div>
+
+          <div className="developer-signature-shell">
+            <span className="developer-signature-spark developer-signature-spark-left">
+              +
+            </span>
+            <span className="developer-signature inline-block">
+              Wasif Hasan
+            </span>
+            <span className="developer-signature-spark developer-signature-spark-right">
+              +
             </span>
           </div>
         </div>

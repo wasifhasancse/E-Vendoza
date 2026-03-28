@@ -63,6 +63,11 @@ const NavBar = ({
     (sum, item) => sum + item.price * item.quantity,
     0,
   );
+  const originalSubtotal = addToCartItems.reduce(
+    (sum, item) => sum + (item.basePrice ?? item.price) * item.quantity,
+    0,
+  );
+  const savings = Math.max(0, originalSubtotal - subtotal);
   const deliveryFee = totalItems > 0 ? 60 : 0;
   const totalPrice = subtotal + deliveryFee;
   const totalFavorites = favoriteItems.length;
@@ -180,6 +185,22 @@ const NavBar = ({
       document.body.style.overflow = previousOverflow;
     };
   }, [checkoutOpen]);
+
+  useEffect(() => {
+    const handleOpenCartPanel = () => {
+      setCartOpen(true);
+      setFavoriteOpen(false);
+      setUserOpen(false);
+      setCategoriesOpen(false);
+      setMobileMenuOpen(false);
+      setMobileSearchOpen(false);
+    };
+
+    window.addEventListener("open-cart-panel", handleOpenCartPanel);
+    return () => {
+      window.removeEventListener("open-cart-panel", handleOpenCartPanel);
+    };
+  }, []);
 
   const handleCheckoutSubmit = () => {
     const errors = {};
@@ -469,9 +490,22 @@ const NavBar = ({
                                 <p className="truncate text-sm font-bold text-[#eef2ff]">
                                   {item.name}
                                 </p>
-                                <p className="text-xs font-semibold text-[#63e6be]">
-                                  ৳{item.price} each
-                                </p>
+                                <div className="mt-0.5 flex items-center gap-2 text-xs">
+                                  <span className="font-semibold text-[#63e6be]">
+                                    ৳{item.price} each
+                                  </span>
+                                  {(item.basePrice ?? item.price) >
+                                    item.price && (
+                                    <>
+                                      <span className="font-medium text-[#7d8aa8] line-through">
+                                        ৳{item.basePrice}
+                                      </span>
+                                      <span className="rounded-full border border-[rgba(99,230,190,0.22)] bg-[rgba(99,230,190,0.08)] px-1.5 py-0.5 text-[0.58rem] font-bold text-[#63e6be]">
+                                        {item.offerLabel || "Offer"}
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
                               </div>
                               <button
                                 onClick={() => onRemoveItem(item.id)}
@@ -516,6 +550,12 @@ const NavBar = ({
                           <span>Subtotal</span>
                           <span className="font-semibold">৳{subtotal}</span>
                         </div>
+                        {savings > 0 && (
+                          <div className="flex items-center justify-between text-[#63e6be]">
+                            <span>Offer Savings</span>
+                            <span className="font-semibold">-৳{savings}</span>
+                          </div>
+                        )}
                         <div className="flex items-center justify-between">
                           <span>Delivery Fee</span>
                           <span className="font-semibold">৳{deliveryFee}</span>
@@ -733,7 +773,7 @@ const NavBar = ({
                           onClick={() =>
                             handleCategorySelect(category.strCategory)
                           }
-                          className={`flex w-[11.5rem] shrink-0 items-center gap-2 rounded-xl border px-2.5 py-2 text-left transition-all ${
+                          className={`flex w-46 shrink-0 items-center gap-2 rounded-xl border px-2.5 py-2 text-left transition-all ${
                             isActive
                               ? "border-[#63e6be] bg-[rgba(99,230,190,0.1)]"
                               : "border-[#233453] bg-[rgba(10,16,30,0.7)] hover:border-[#3d5480]"
@@ -762,7 +802,7 @@ const NavBar = ({
         typeof document !== "undefined" &&
         createPortal(
           <div
-            className="fixed inset-0 z-[9999] overflow-y-auto bg-[rgba(2,8,20,0.87)] backdrop-blur-sm"
+            className="fixed inset-0 z-9999 overflow-y-auto bg-[rgba(2,8,20,0.87)] backdrop-blur-sm"
             role="dialog"
             aria-modal="true"
           >
@@ -771,7 +811,7 @@ const NavBar = ({
             )}
 
             <div className="relative z-10 flex min-h-full items-center justify-center p-2 sm:p-6">
-              <div className="relative mx-auto flex min-h-0 w-full max-w-[44rem] flex-col overflow-hidden rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.99),rgba(9,14,27,0.99))] shadow-[0_30px_70px_rgba(2,8,20,0.65)] max-h-[calc(100vh-1rem)] sm:max-h-[calc(100vh-3rem)] sm:rounded-3xl">
+              <div className="relative mx-auto flex min-h-0 w-full max-w-176 flex-col overflow-hidden rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.99),rgba(9,14,27,0.99))] shadow-[0_30px_70px_rgba(2,8,20,0.65)] max-h-[calc(100vh-1rem)] sm:max-h-[calc(100vh-3rem)] sm:rounded-3xl">
                 <div className="pointer-events-none absolute -right-18 -top-18 h-48 w-48 rounded-full bg-[radial-gradient(circle,rgba(99,230,190,0.2)_0%,transparent_70%)] blur-2xl" />
                 <div className="pointer-events-none absolute -left-16 bottom-0 h-44 w-44 rounded-full bg-[radial-gradient(circle,rgba(255,143,106,0.18)_0%,transparent_70%)] blur-2xl" />
 
@@ -850,9 +890,17 @@ const NavBar = ({
                                   ×{item.quantity}
                                 </span>
                               </span>
-                              <span className="shrink-0 font-bold text-[#c8d3eb]">
-                                ৳{item.price * item.quantity}
-                              </span>
+                              <div className="shrink-0 text-right">
+                                <p className="font-bold text-[#c8d3eb]">
+                                  ৳{item.price * item.quantity}
+                                </p>
+                                {(item.basePrice ?? item.price) >
+                                  item.price && (
+                                  <p className="text-[0.65rem] text-[#7d8aa8] line-through">
+                                    ৳{item.basePrice * item.quantity}
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -863,6 +911,12 @@ const NavBar = ({
                               ৳{subtotal}
                             </span>
                           </div>
+                          {savings > 0 && (
+                            <div className="flex items-center justify-between text-[#63e6be]">
+                              <span>Offer Savings</span>
+                              <span className="font-bold">-৳{savings}</span>
+                            </div>
+                          )}
                           <div className="flex items-center justify-between">
                             <span className="text-[#9ba5be]">Delivery Fee</span>
                             <span className="font-bold text-[#eef2ff]">

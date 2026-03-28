@@ -1,0 +1,88 @@
+{
+  "offers": [
+    {
+      "id": "offer-1",
+      "tag": "Limited Time",
+      "tagColor": "#ffd166",
+      "tagBg": "rgba(255,209,102,0.12)",
+      "tagBorder": "rgba(255,209,102,0.28)",
+      "glowColor": "rgba(255,209,102,0.14)",
+      "borderAccent": "#ffd166",
+      "badge": "HOT",
+      "title": "First Order Free Delivery",
+      "description": "Random chef pick with full item discount for this offer slot.",
+      "discount": "FREE",
+      "discountSub": "Delivery",
+      "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=900&q=80",
+      "offerType": "free_item",
+      "offerLabel": "100% OFF",
+      "discountPercent": 100
+    },
+    {
+      "id": "offer-2",
+      "tag": "Weekend Deal",
+      "tagColor": "#63e6be",
+      "tagBg": "rgba(99,230,190,0.10)",
+      "tagBorder": "rgba(99,230,190,0.28)",
+      "glowColor": "rgba(99,230,190,0.13)",
+      "borderAccent": "#63e6be",
+      "badge": "SAVE",
+      "title": "Weekend Special 20% Off",
+      "description": "Random chef pick with 20% discount applied to meal price.",
+      "discount": "20%",
+      "discountSub": "Off Total",
+      "image": "https://images.unsplash.com/photo-1565299507177-b0ac66763828?auto=format&fit=crop&w=900&q=80",
+      "offerType": "percent_off",
+      "offerLabel": "20% OFF",
+      "discountPercent": 20
+    },
+    {
+      "id": "offer-3",
+      "tag": "Flash Sale",
+      "tagColor": "#ff8f6a",
+      "tagBg": "rgba(255,143,106,0.10)",
+      "tagBorder": "rgba(255,143,106,0.28)",
+      "glowColor": "rgba(255,143,106,0.14)",
+      "borderAccent": "#ff8f6a",
+      "badge": "LUNCH",
+      "title": "Lunch Flash Flat Tk 50 Off",
+      "description": "Random chef pick with flat Tk 50 discount.",
+      "discount": "Tk50",
+      "discountSub": "Lunch Hours",
+      "image": "https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?auto=format&fit=crop&w=900&q=80",
+      "offerType": "flat_off",
+      "offerLabel": "Tk50 OFF",
+      "discountAmount": 50
+    }
+  ],
+  "highlights": [
+    {
+      "icon": "truck",
+      "accent": "#63e6be",
+      "iconBg": "rgba(99,230,190,0.12)",
+      "title": "Free Delivery",
+      "sub": "On orders above Tk 299"
+    },
+    {
+      "icon": "clock",
+      "accent": "#ffd166",
+      "iconBg": "rgba(255,209,102,0.12)",
+      "title": "30-Min Delivery",
+      "sub": "Average delivery time"
+    },
+    {
+      "icon": "percent",
+      "accent": "#ff8f6a",
+      "iconBg": "rgba(255,143,106,0.12)",
+      "title": "Daily Deals",
+      "sub": "Fresh offers every day"
+    },
+    {
+      "icon": "bolt",
+      "accent": "#a78bfa",
+      "iconBg": "rgba(167,139,250,0.12)",
+      "title": "Live Tracking",
+      "sub": "Real-time order updates"
+    }
+  ]
+}

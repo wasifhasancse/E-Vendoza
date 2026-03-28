@@ -125,7 +125,7 @@ const Testimonials = () => {
         </div>
 
         {/* Review grid */}
-        <div className="mt-8 columns-1 gap-5 sm:columns-2 lg:columns-3 md:gap-6 [column-fill:balance]">
+        <div className="mt-8 columns-1 gap-5 sm:columns-2 lg:columns-3 md:gap-6">
           {REVIEWS.map((review) => (
             <article
               key={review.id}
