@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
 import { FaArrowRightLong } from "react-icons/fa6";
 import CatagoriesFood from "../CatagoriesFood/CatagoriesFood";
 import MenuItemCard from "./MenuItemCard";
@@ -17,17 +17,17 @@ const Menu = ({
   const effectiveCategory =
     selectedCategory ?? allCategoriesData[0]?.strCategory ?? null;
 
-  const manageMenuExploreData = async () => {
+  const manageMenuExplore = useMemo(() => {
     if (!effectiveCategory) {
-      return { meals: null };
+      return Promise.resolve({ meals: null });
     }
 
-    const getManageMenuExplorePromise = await fetch(
+    return fetch(
       `https://www.themealdb.com/api/json/v1/1/filter.php?c=${effectiveCategory}`,
-    );
-    return await getManageMenuExplorePromise.json();
-  };
-  const manageMenuExplore = manageMenuExploreData();
+    )
+      .then((response) => response.json())
+      .catch(() => ({ meals: null }));
+  }, [effectiveCategory]);
 
   return (
     <section
@@ -55,15 +55,34 @@ const Menu = ({
         </div>
 
         {categoriesLoading ? (
-          <div className="mt-8 rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] p-8 text-center text-[#8897b5] shadow-[0_12px_30px_rgba(2,8,20,0.32)]">
-            <span className="loading loading-bars loading-lg text-[#63e6be]"></span>
-            <p className="mt-3 text-sm font-semibold text-[#c8d3eb]">
-              Loading menu categories...
+          <div className="mt-8 relative overflow-hidden rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] p-8 text-center text-[#8897b5] shadow-[0_12px_30px_rgba(2,8,20,0.32)]">
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <div className="h-52 w-52 rounded-full bg-[radial-gradient(circle,rgba(99,230,190,0.1)_0%,transparent_70%)] blur-3xl" />
+            </div>
+            <div className="relative mx-auto grid h-16 w-16 place-items-center rounded-[18px] border border-[#27406a] bg-[rgba(16,24,42,0.78)]">
+              <span className="h-9 w-9 animate-spin rounded-full border-4 border-[#2b3d5e] border-t-[#63e6be]" />
+            </div>
+            <p className="relative mt-4 text-sm font-extrabold uppercase tracking-[0.18em] text-[#63e6be] animate-pulse">
+              Loading Categories
+            </p>
+            <p className="relative mt-2 text-xs font-semibold text-[#9ba5be]">
+              Curating fresh picks for your next meal.
             </p>
           </div>
         ) : allCategoriesData.length === 0 ? (
-          <div className="mt-8 rounded-2xl border border-dashed border-[#1c2b43] p-5 text-center text-[#8897b5]">
-            No categories available right now.
+          <div className="mt-8 relative overflow-hidden rounded-2xl border border-dashed border-[#2b3d5e] bg-[linear-gradient(160deg,rgba(16,24,42,0.94),rgba(9,14,27,0.95))] px-6 py-8 text-center shadow-[0_12px_30px_rgba(2,8,20,0.32)]">
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <div className="h-44 w-44 rounded-full bg-[radial-gradient(circle,rgba(255,143,106,0.1)_0%,transparent_70%)] blur-3xl" />
+            </div>
+            <p className="relative text-[0.7rem] font-extrabold uppercase tracking-[0.22em] text-[#ff8f6a]">
+              Empty Menu
+            </p>
+            <p className="relative mt-2 text-sm font-bold text-[#d9e1f6]">
+              No categories available right now.
+            </p>
+            <p className="relative mt-1 text-xs text-[#8897b5]">
+              Please check again shortly.
+            </p>
           </div>
         ) : (
           <div className="mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
@@ -81,8 +100,15 @@ const Menu = ({
         <div id="menu-items-section">
           <Suspense
             fallback={
-              <div className="flex justify-center py-10">
-                <span className="loading loading-bars loading-xl text-[#63e6be]"></span>
+              <div className="mt-8 rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] px-6 py-8 text-center shadow-[0_12px_30px_rgba(2,8,20,0.32)]">
+                <div className="mx-auto flex w-fit items-center gap-2">
+                  <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-[#63e6be] [animation-delay:-0.2s]" />
+                  <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-[#63e6be] [animation-delay:-0.1s]" />
+                  <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-[#63e6be]" />
+                </div>
+                <p className="mt-3 text-xs font-extrabold uppercase tracking-[0.18em] text-[#63e6be]">
+                  Loading Meals
+                </p>
               </div>
             }
           >

@@ -74,7 +74,7 @@ const CatagoriesFood = ({
           <div className="h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(99,230,190,0.07)_0%,transparent_70%)] blur-2xl" />
         </div>
         {/* Icon */}
-        <div className="relative grid h-16 w-16 place-items-center rounded-[18px] border border-[#1c2b43] bg-[rgba(99,230,190,0.1)] text-[#63e6be] shadow-[0_0_28px_rgba(99,230,190,0.2)]">
+        <div className="relative grid h-16 w-16 place-items-center rounded-[18px] border border-[#1c2b43] bg-[rgba(99,230,190,0.1)] text-[#63e6be] shadow-[0_0_28px_rgba(99,230,190,0.2)] animate-pulse">
           <FaBowlFood size={28} />
         </div>
         {/* Text */}
@@ -271,6 +271,7 @@ const CatagoriesFood = ({
           onClose={() => setSelectedMealId(null)}
           onAddToCart={onAddToCart}
           onBuyNow={onBuyNow}
+          buyNowScrollToTop={false}
         />
       )}
     </div>

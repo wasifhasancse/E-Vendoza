@@ -76,7 +76,9 @@ function App() {
 
   const handleBuyNow = (meal, price, meta = {}) => {
     handleAddToCart(meal, price, meta);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (meta.scrollToTop) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
     window.dispatchEvent(new CustomEvent("open-cart-panel"));
   };
 

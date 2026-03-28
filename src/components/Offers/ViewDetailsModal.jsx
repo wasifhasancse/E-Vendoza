@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { FaXmark } from "react-icons/fa6";
+import { FaCheck, FaCopy, FaXmark } from "react-icons/fa6";
 
 const ViewDetailsModal = ({
   idMeal,
@@ -8,12 +8,15 @@ const ViewDetailsModal = ({
   onClose,
   onAddToCart,
   onBuyNow,
+  buyNowScrollToTop = false,
 }) => {
   const [mealData, setMealData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [copiedMealId, setCopiedMealId] = useState(false);
   const modalScrollRef = useRef(null);
   const contentScrollRef = useRef(null);
+  const mealIdCopyTimerRef = useRef(null);
 
   useEffect(() => {
     const fetchMealDetails = async () => {
@@ -50,13 +53,37 @@ const ViewDetailsModal = ({
     // Always open from top so category and offer detail modals behave identically.
     modalScrollRef.current?.scrollTo({ top: 0, behavior: "auto" });
     contentScrollRef.current?.scrollTo({ top: 0, behavior: "auto" });
+    setCopiedMealId(false);
   }, [idMeal]);
+
+  useEffect(() => {
+    return () => {
+      if (mealIdCopyTimerRef.current) {
+        clearTimeout(mealIdCopyTimerRef.current);
+      }
+    };
+  }, []);
 
   if (!mealData && !loading) return null;
   if (typeof document === "undefined") return null;
 
   const meal = mealData;
   const displayMeal = meal || offer?.meal;
+
+  const handleCopyMealId = async () => {
+    if (!displayMeal?.idMeal || !navigator?.clipboard) return;
+
+    await navigator.clipboard.writeText(String(displayMeal.idMeal));
+    setCopiedMealId(true);
+
+    if (mealIdCopyTimerRef.current) {
+      clearTimeout(mealIdCopyTimerRef.current);
+    }
+
+    mealIdCopyTimerRef.current = setTimeout(() => {
+      setCopiedMealId(false);
+    }, 1800);
+  };
 
   return createPortal(
     <div
@@ -78,17 +105,36 @@ const ViewDetailsModal = ({
           </button>
 
           {loading ? (
-            <div className="flex h-96 items-center justify-center">
-              <div className="text-center">
-                <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-[#2b3d5e] border-t-[#63e6be]"></div>
-                <p className="text-sm text-[#8897b5]">
-                  Loading meal details...
+            <div className="relative flex h-96 items-center justify-center overflow-hidden">
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <div className="h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(99,230,190,0.12)_0%,transparent_70%)] blur-3xl" />
+              </div>
+              <div className="relative text-center">
+                <div className="mx-auto grid h-16 w-16 place-items-center rounded-[18px] border border-[#27406a] bg-[rgba(16,24,42,0.82)]">
+                  <span className="h-9 w-9 animate-spin rounded-full border-4 border-[#2b3d5e] border-t-[#63e6be]" />
+                </div>
+                <p className="mt-4 text-xs font-extrabold uppercase tracking-[0.2em] text-[#63e6be] animate-pulse">
+                  Loading Meal Details
+                </p>
+                <p className="mt-2 text-xs text-[#8897b5]">
+                  Fetching fresh information from kitchen records.
                 </p>
               </div>
             </div>
           ) : error ? (
-            <div className="flex h-96 items-center justify-center">
-              <p className="text-center text-sm text-[#ff8f6a]">{error}</p>
+            <div className="relative flex h-96 items-center justify-center overflow-hidden px-6 text-center">
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <div className="h-52 w-52 rounded-full bg-[radial-gradient(circle,rgba(255,143,106,0.14)_0%,transparent_70%)] blur-3xl" />
+              </div>
+              <div className="relative">
+                <p className="text-[0.7rem] font-extrabold uppercase tracking-[0.22em] text-[#ff8f6a]">
+                  Unable To Load
+                </p>
+                <p className="mt-2 text-sm font-bold text-[#e7ecff]">{error}</p>
+                <p className="mt-1 text-xs text-[#8897b5]">
+                  Try closing and opening details again.
+                </p>
+              </div>
             </div>
           ) : (
             <>
@@ -154,12 +200,32 @@ const ViewDetailsModal = ({
 
                   {displayMeal?.idMeal && (
                     <div className="rounded-xl border border-[#223252] bg-[rgba(10,16,30,0.68)] p-3">
-                      <p className="text-[0.62rem] font-extrabold uppercase tracking-[0.16em] text-[#7d8aa8]">
-                        Meal ID
-                      </p>
-                      <p className="mt-1 text-sm font-bold text-[#e7ecff]">
-                        {displayMeal.idMeal}
-                      </p>
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-[0.62rem] font-extrabold uppercase tracking-[0.16em] text-[#7d8aa8]">
+                            Meal ID
+                          </p>
+                          <p className="mt-1 text-sm font-bold text-[#e7ecff]">
+                            {displayMeal.idMeal}
+                          </p>
+                        </div>
+                        <button
+                          onClick={handleCopyMealId}
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[0.66rem] font-bold transition-all duration-200 ${
+                            copiedMealId
+                              ? "border-[rgba(99,230,190,0.35)] bg-[rgba(99,230,190,0.12)] text-[#63e6be]"
+                              : "border-[#2b3d5e] bg-[rgba(16,24,42,0.72)] text-[#c8d3eb] hover:border-[#63e6be] hover:text-[#63e6be]"
+                          }`}
+                          aria-label="Copy Meal ID"
+                        >
+                          {copiedMealId ? (
+                            <FaCheck size={11} />
+                          ) : (
+                            <FaCopy size={11} />
+                          )}
+                          {copiedMealId ? "Copied" : "Copy"}
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -254,6 +320,7 @@ const ViewDetailsModal = ({
                             basePrice: offer.basePrice,
                             offerType: offer.offerType,
                             offerLabel: offer.offerLabel,
+                            scrollToTop: buyNowScrollToTop,
                           });
                           onClose();
                         }}

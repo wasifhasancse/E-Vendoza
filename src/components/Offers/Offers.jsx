@@ -146,8 +146,19 @@ const Offers = ({ onAddToCart, onBuyNow }) => {
         {/* Offer cards */}
         <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
           {offersData.offers.length === 0 ? (
-            <div className="lg:col-span-3 rounded-2xl border border-dashed border-[#1c2b43] p-5 text-center text-[#8897b5]">
-              Offer data is unavailable right now.
+            <div className="lg:col-span-3 relative overflow-hidden rounded-2xl border border-dashed border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.94),rgba(9,14,27,0.95))] px-6 py-8 text-center shadow-[0_12px_30px_rgba(2,8,20,0.32)]">
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <div className="h-44 w-44 rounded-full bg-[radial-gradient(circle,rgba(99,230,190,0.1)_0%,transparent_70%)] blur-3xl" />
+              </div>
+              <p className="relative text-[0.7rem] font-extrabold uppercase tracking-[0.22em] text-[#63e6be]">
+                No Active Offers
+              </p>
+              <p className="relative mt-2 text-sm font-bold text-[#d9e1f6]">
+                Offer data is unavailable right now.
+              </p>
+              <p className="relative mt-1 text-xs text-[#8897b5]">
+                We are preparing fresh discounts for you.
+              </p>
             </div>
           ) : (
             offersData.offers.map((offer) => (
@@ -198,6 +209,7 @@ const Offers = ({ onAddToCart, onBuyNow }) => {
           onClose={() => setSelectedMealId(null)}
           onAddToCart={onAddToCart}
           onBuyNow={onBuyNow}
+          buyNowScrollToTop={false}
         />
       )}
     </section>

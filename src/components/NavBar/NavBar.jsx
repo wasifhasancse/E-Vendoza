@@ -4,7 +4,9 @@ import {
   FaBars,
   FaBolt,
   FaCartShopping,
+  FaCheck,
   FaCircleCheck,
+  FaCopy,
   FaGear,
   FaHeart,
   FaMagnifyingGlass,
@@ -39,6 +41,7 @@ const NavBar = ({
   const [favoriteOpen, setFavoriteOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [isClearingCart, setIsClearingCart] = useState(false);
   const [checkoutForm, setCheckoutForm] = useState({
     name: "",
     phone: "",
@@ -52,7 +55,10 @@ const NavBar = ({
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderNumber, setOrderNumber] = useState(null);
+  const [orderNumberCopied, setOrderNumberCopied] = useState(false);
   const navRef = useRef(null);
+  const orderNumberCopyTimerRef = useRef(null);
+  const clearCartTimerRef = useRef(null);
   const allCategories = categories ?? [];
 
   const totalItems = addToCartItems.reduce(
@@ -202,6 +208,17 @@ const NavBar = ({
     };
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (orderNumberCopyTimerRef.current) {
+        clearTimeout(orderNumberCopyTimerRef.current);
+      }
+      if (clearCartTimerRef.current) {
+        clearTimeout(clearCartTimerRef.current);
+      }
+    };
+  }, []);
+
   const handleCheckoutSubmit = () => {
     const errors = {};
     if (!checkoutForm.name.trim()) errors.name = "Full name is required";
@@ -228,8 +245,35 @@ const NavBar = ({
       setIsPlacingOrder(false);
       setOrderSuccess(true);
       setOrderNumber(Math.floor(100000 + Math.random() * 900000));
+      setOrderNumberCopied(false);
       onClearCart?.();
     }, 1800);
+  };
+
+  const handleCopyOrderNumber = async () => {
+    if (!orderNumber || !navigator?.clipboard) return;
+
+    await navigator.clipboard.writeText(String(orderNumber));
+    setOrderNumberCopied(true);
+
+    if (orderNumberCopyTimerRef.current) {
+      clearTimeout(orderNumberCopyTimerRef.current);
+    }
+
+    orderNumberCopyTimerRef.current = setTimeout(() => {
+      setOrderNumberCopied(false);
+    }, 1800);
+  };
+
+  const handleClearCartClick = () => {
+    if (isClearingCart || addToCartItems.length === 0) return;
+
+    setIsClearingCart(true);
+
+    clearCartTimerRef.current = setTimeout(() => {
+      onClearCart?.();
+      setIsClearingCart(false);
+    }, 350);
   };
 
   return (
@@ -355,11 +399,17 @@ const NavBar = ({
                   </p>
 
                   {favoriteItems.length === 0 ? (
-                    <div className="mt-4 rounded-xl border border-dashed border-[#2b3d5e] bg-[rgba(10,16,30,0.45)] px-4 py-6 text-center">
-                      <p className="text-sm font-semibold text-[#c8d3eb]">
+                    <div className="mt-4 relative overflow-hidden rounded-xl border border-dashed border-[#2b3d5e] bg-[rgba(10,16,30,0.45)] px-4 py-6 text-center">
+                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                        <div className="h-32 w-32 rounded-full bg-[radial-gradient(circle,rgba(255,143,106,0.12)_0%,transparent_70%)] blur-2xl" />
+                      </div>
+                      <p className="relative text-[0.62rem] font-extrabold uppercase tracking-[0.18em] text-[#ff9a76]">
+                        Empty Favorites
+                      </p>
+                      <p className="relative mt-2 text-sm font-semibold text-[#c8d3eb]">
                         No favorites yet
                       </p>
-                      <p className="mt-1 text-xs text-[#8897b5]">
+                      <p className="relative mt-1 text-xs text-[#8897b5]">
                         Tap the heart icon on meals to save them here.
                       </p>
                     </div>
@@ -464,11 +514,17 @@ const NavBar = ({
                   </p>
 
                   {addToCartItems.length === 0 ? (
-                    <div className="mt-4 rounded-xl border border-dashed border-[#2b3d5e] bg-[rgba(10,16,30,0.45)] px-4 py-6 text-center">
-                      <p className="text-sm font-semibold text-[#c8d3eb]">
+                    <div className="mt-4 relative overflow-hidden rounded-xl border border-dashed border-[#2b3d5e] bg-[rgba(10,16,30,0.45)] px-4 py-6 text-center">
+                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                        <div className="h-32 w-32 rounded-full bg-[radial-gradient(circle,rgba(99,230,190,0.12)_0%,transparent_70%)] blur-2xl" />
+                      </div>
+                      <p className="relative text-[0.62rem] font-extrabold uppercase tracking-[0.18em] text-[#63e6be]">
+                        Cart Status
+                      </p>
+                      <p className="relative mt-2 text-sm font-semibold text-[#c8d3eb]">
                         Your cart is empty
                       </p>
-                      <p className="mt-1 text-xs text-[#8897b5]">
+                      <p className="relative mt-1 text-xs text-[#8897b5]">
                         Add meals from the menu to see them here.
                       </p>
                     </div>
@@ -571,8 +627,25 @@ const NavBar = ({
                       </div>
 
                       <div className="mt-3 grid grid-cols-2 gap-2">
-                        <button className="rounded-xl border border-[#2b3d5e] py-2 text-sm font-semibold text-[#c8d3eb] hover:border-[#63e6be] hover:text-[#63e6be] transition-colors">
-                          View Cart
+                        <button
+                          onClick={handleClearCartClick}
+                          className={`inline-flex items-center justify-center gap-2 rounded-xl py-2 text-sm font-bold transition-all duration-300 ${
+                            isClearingCart
+                              ? "border border-[rgba(255,154,118,0.35)] bg-[rgba(255,154,118,0.16)] text-[#ffb59d]"
+                              : "border border-[rgba(255,154,118,0.28)] bg-[linear-gradient(135deg,rgba(255,154,118,0.14),rgba(255,99,71,0.08))] text-[#ff9a76] hover:-translate-y-0.5 hover:border-[#ff9a76] hover:shadow-[0_10px_20px_rgba(255,154,118,0.14)]"
+                          }`}
+                        >
+                          {isClearingCart ? (
+                            <>
+                              <FaSpinner className="animate-spin" size={13} />
+                              Clearing...
+                            </>
+                          ) : (
+                            <>
+                              <FaTrash size={13} />
+                              Clear Cart
+                            </>
+                          )}
                         </button>
                         <button
                           onClick={openCheckout}
@@ -837,13 +910,32 @@ const NavBar = ({
                       .
                     </p>
                     {orderNumber && (
-                      <div className="mt-6 rounded-2xl border border-[rgba(99,230,190,0.2)] bg-[rgba(99,230,190,0.06)] px-8 py-4">
-                        <p className="text-xs uppercase tracking-[0.18em] text-[#8897b5]">
-                          Order Number
-                        </p>
-                        <p className="mt-1 text-2xl font-black tracking-widest text-[#63e6be]">
-                          #{orderNumber}
-                        </p>
+                      <div className="mt-6 rounded-2xl border border-[rgba(99,230,190,0.2)] bg-[rgba(99,230,190,0.06)] px-6 py-4">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <p className="text-xs uppercase tracking-[0.18em] text-[#8897b5]">
+                              Order Number
+                            </p>
+                            <p className="mt-1 text-2xl font-black tracking-widest text-[#63e6be]">
+                              #{orderNumber}
+                            </p>
+                          </div>
+                          <button
+                            onClick={handleCopyOrderNumber}
+                            className={`inline-flex items-center justify-center gap-1.5 rounded-full border px-3 py-1.5 text-[0.72rem] font-bold transition-all duration-200 ${
+                              orderNumberCopied
+                                ? "border-[rgba(99,230,190,0.35)] bg-[rgba(99,230,190,0.12)] text-[#63e6be]"
+                                : "border-[#2b3d5e] bg-[rgba(16,24,42,0.72)] text-[#c8d3eb] hover:border-[#63e6be] hover:text-[#63e6be]"
+                            }`}
+                          >
+                            {orderNumberCopied ? (
+                              <FaCheck size={12} />
+                            ) : (
+                              <FaCopy size={12} />
+                            )}
+                            {orderNumberCopied ? "Copied" : "Copy Number"}
+                          </button>
+                        </div>
                       </div>
                     )}
                     <button
