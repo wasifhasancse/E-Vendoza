@@ -158,6 +158,12 @@ const Hero = ({ onAddToCart }) => {
     if (!onAddToCart || !meal) return;
     onAddToCart(meal, price);
   };
+
+  const scrollToSection = (id) => {
+    document
+      .getElementById(id)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
   return (
     <section
       id="hero-section"
@@ -207,7 +213,10 @@ const Hero = ({ onAddToCart }) => {
 
             {/* CTA buttons */}
             <div className="flex flex-wrap items-center gap-4">
-              <button className="btn relative overflow-hidden border-0 rounded-full px-8 py-3 text-[#071510] font-bold bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] shadow-[0_10px_28px_rgba(99,230,190,0.38)] hover:brightness-110 transition-all duration-200">
+              <button
+                onClick={() => scrollToSection("menu-section")}
+                className="btn relative overflow-hidden border-0 rounded-full px-8 py-3 text-[#071510] font-bold bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] shadow-[0_10px_28px_rgba(99,230,190,0.38)] hover:brightness-110 transition-all duration-200"
+              >
                 <span className="absolute inset-0 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.22),transparent)] animate-[pulse_1.8s_ease-in-out_infinite]" />
                 <span className="relative inline-flex items-center gap-2">
                   <span className="relative flex h-2 w-2 shrink-0">
@@ -218,7 +227,10 @@ const Hero = ({ onAddToCart }) => {
                   <span>🍔</span>
                 </span>
               </button>
-              <button className="inline-flex items-center gap-3 font-semibold text-[#e8ecfa] transition-colors hover:text-[#63e6be]">
+              <button
+                onClick={() => scrollToSection("how-it-works-section")}
+                className="inline-flex items-center gap-3 font-semibold text-[#e8ecfa] transition-colors hover:text-[#63e6be]"
+              >
                 <span className="relative grid h-10 w-10 place-items-center overflow-hidden rounded-full border border-[#303851] bg-[#1b2133] text-[#ffd166] shadow-md">
                   <span className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,209,102,0.16),transparent_72%)] animate-pulse" />
                   <FaPlay size={12} />
@@ -228,7 +240,7 @@ const Hero = ({ onAddToCart }) => {
             </div>
 
             {/* Stats strip */}
-            <div className="grid grid-cols-4 gap-2.5 max-w-sm">
+            <div className="grid grid-cols-2 gap-2.5 max-w-sm sm:grid-cols-4">
               {statsData.map((s) => (
                 <div
                   key={s.label}
@@ -451,10 +463,16 @@ const Hero = ({ onAddToCart }) => {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <button className="btn border-0 rounded-full px-6 text-[#071510] font-bold bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] shadow-[0_8px_22px_rgba(99,230,190,0.32)] hover:brightness-110 transition-all">
+              <button
+                onClick={() => scrollToSection("menu-section")}
+                className="btn border-0 rounded-full px-6 text-[#071510] font-bold bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] shadow-[0_8px_22px_rgba(99,230,190,0.32)] hover:brightness-110 transition-all"
+              >
                 Start Ordering
               </button>
-              <button className="btn rounded-full border border-[#2b3d5e] bg-transparent px-6 font-semibold text-[#c8d3eb] hover:border-[#63e6be] hover:text-[#63e6be] transition-all">
+              <button
+                onClick={() => scrollToSection("menu-items-section")}
+                className="btn rounded-full border border-[#2b3d5e] bg-transparent px-6 font-semibold text-[#c8d3eb] hover:border-[#63e6be] hover:text-[#63e6be] transition-all"
+              >
                 Browse Menu
               </button>
             </div>

@@ -114,8 +114,11 @@ const Testimonials = () => {
                   <img
                     src={review.avatar}
                     alt={review.name}
-                    className="h-11 w-11 shrink-0 rounded-full object-cover ring-2"
-                    style={{ ringColor: review.accentColor + "40" }}
+                    className="h-11 w-11 shrink-0 rounded-full object-cover"
+                    style={{
+                      outline: `2px solid ${review.accentColor}40`,
+                      outlineOffset: "2px",
+                    }}
                   />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-bold text-[#eef2ff]">

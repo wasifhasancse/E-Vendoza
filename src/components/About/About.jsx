@@ -113,32 +113,56 @@ const About = () => {
               Developer
             </p>
 
-            <div className="mt-3 rounded-xl border border-[#253754] bg-[rgba(10,16,30,0.72)] p-4">
-              <p className="text-[0.64rem] font-extrabold uppercase tracking-[0.22em] text-[#6f82a7]">
-                {developer.label || "Crafted by"}
-              </p>
-              <h3 className="mt-2 text-2xl font-black text-[#eef2ff]">
-                {developer.name || "Developer"}
-              </h3>
+            <div className="relative mt-3 overflow-hidden rounded-xl border border-[#253754] bg-[rgba(10,16,30,0.72)] p-4">
+              {/* ambient glow */}
+              <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-[radial-gradient(circle,rgba(99,230,190,0.18)_0%,transparent_70%)] blur-2xl" />
+              <div className="pointer-events-none absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-[radial-gradient(circle,rgba(255,143,106,0.12)_0%,transparent_70%)] blur-2xl" />
 
-              <div className="mt-3 space-y-2">
-                <div className="inline-flex items-center gap-2 text-sm text-[#9ba5be]">
-                  <FaUserTie className="text-[#63e6be]" size={12} />
-                  {developer.role || "Full-Stack Developer"}
+              <div className="relative">
+                <p className="text-[0.64rem] font-extrabold uppercase tracking-[0.22em] text-[#6f82a7]">
+                  {developer.label || "Crafted by"}
+                </p>
+
+                <div className="mt-2 flex items-center gap-2.5">
+                  <h3 className="text-2xl font-black text-[#eef2ff]">
+                    {developer.name || "Developer"}
+                  </h3>
+                  <span className="relative flex h-2.5 w-2.5 shrink-0">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#63e6be] opacity-60 animate-ping" />
+                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#63e6be] shadow-[0_0_6px_rgba(99,230,190,0.7)]" />
+                  </span>
                 </div>
-                <div className="inline-flex items-center gap-2 text-sm text-[#9ba5be]">
-                  <FaLocationDot className="text-[#63e6be]" size={12} />
-                  {developer.location || "Bangladesh"}
+
+                <div className="mt-3 space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-[#9ba5be]">
+                    <FaUserTie className="shrink-0 text-[#63e6be]" size={12} />
+                    {developer.role || "Full-Stack Developer"}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-[#9ba5be]">
+                    <FaLocationDot
+                      className="shrink-0 text-[#63e6be]"
+                      size={12}
+                    />
+                    {developer.location || "Bangladesh"}
+                  </div>
                 </div>
-                <div className="inline-flex items-center gap-2 text-sm text-[#9ba5be]">
-                  <FaCode className="text-[#63e6be]" size={12} />
-                  React, Tailwind CSS, API Integration
+
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {["React", "Tailwind CSS", "REST API"].map((tech) => (
+                    <span
+                      key={tech}
+                      className="inline-flex items-center gap-1 rounded-full border border-[rgba(99,230,190,0.22)] bg-[rgba(99,230,190,0.07)] px-2.5 py-1 text-[0.62rem] font-bold text-[#63e6be]/80"
+                    >
+                      <FaCode size={9} />
+                      {tech}
+                    </span>
+                  ))}
                 </div>
+
+                <p className="mt-4 text-xs leading-relaxed text-[#8e9bb8]">
+                  {developer.bio}
+                </p>
               </div>
-
-              <p className="mt-4 text-xs leading-relaxed text-[#8e9bb8]">
-                {developer.bio}
-              </p>
             </div>
           </aside>
         </div>

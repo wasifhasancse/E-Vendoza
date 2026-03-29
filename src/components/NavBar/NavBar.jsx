@@ -1,26 +1,27 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
-    FaBars,
-    FaBolt,
-    FaBowlFood,
-    FaCartShopping,
-    FaCheck,
-    FaCircleCheck,
-    FaCopy,
-    FaFire,
-    FaGear,
-    FaHeart,
-    FaMagnifyingGlass,
-    FaMinus,
-    FaPlus,
-    FaRightFromBracket,
-    FaSpinner,
-    FaStar,
-    FaTrash,
-    FaUser,
-    FaXmark,
+  FaBars,
+  FaBolt,
+  FaBowlFood,
+  FaCartShopping,
+  FaCheck,
+  FaCircleCheck,
+  FaCopy,
+  FaFire,
+  FaGear,
+  FaHeart,
+  FaMagnifyingGlass,
+  FaMinus,
+  FaPlus,
+  FaRightFromBracket,
+  FaSpinner,
+  FaStar,
+  FaTrash,
+  FaUser,
+  FaXmark,
 } from "react-icons/fa6";
+import ViewDetailsModal from "../Offers/ViewDetailsModal";
 
 const NAV_LINKS = ["Home", "Menu", "Food", "About"];
 
@@ -60,13 +61,19 @@ const NavBar = ({
   const [orderNumber, setOrderNumber] = useState(null);
   const [orderNumberCopied, setOrderNumberCopied] = useState(false);
   const navRef = useRef(null);
+  const desktopSearchRef = useRef(null);
+  const mobileSearchRef = useRef(null);
+  const searchDropdownRef = useRef(null);
   const orderNumberCopyTimerRef = useRef(null);
   const clearCartTimerRef = useRef(null);
   const searchDebounceRef = useRef(null);
+  const searchRequestIdRef = useRef(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
+  const [searchDetailsMeal, setSearchDetailsMeal] = useState(null);
+  const [searchDropdownStyle, setSearchDropdownStyle] = useState(null);
   const allCategories = categories ?? [];
 
   const totalItems = addToCartItems.reduce(
@@ -181,6 +188,7 @@ const NavBar = ({
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (checkoutOpen) return;
+      if (searchDropdownRef.current?.contains(event.target)) return;
       if (navRef.current && !navRef.current.contains(event.target)) {
         closeAllPanels();
       }
@@ -307,11 +315,50 @@ const NavBar = ({
   };
 
   const clearSearch = () => {
+    searchRequestIdRef.current += 1;
     setSearchQuery("");
     setSearchResults([]);
     setSearchDropdownOpen(false);
     setSearchLoading(false);
+    setSearchDropdownStyle(null);
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+  };
+
+  const updateSearchDropdownPosition = () => {
+    if (typeof window === "undefined") return;
+
+    const anchor = mobileSearchOpen
+      ? mobileSearchRef.current
+      : desktopSearchRef.current;
+
+    if (!anchor) {
+      setSearchDropdownStyle(null);
+      return;
+    }
+
+    const rect = anchor.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const gutter = mobileSearchOpen ? 16 : 12;
+    const desiredWidth = mobileSearchOpen
+      ? Math.min(rect.width, viewportWidth - gutter * 2)
+      : Math.min(544, viewportWidth - gutter * 2);
+    const centeredLeft = mobileSearchOpen
+      ? rect.left
+      : rect.left + rect.width / 2 - desiredWidth / 2;
+    const left = Math.max(
+      gutter,
+      Math.min(centeredLeft, viewportWidth - desiredWidth - gutter),
+    );
+    const top = rect.bottom + 8;
+    const maxHeight = Math.max(220, viewportHeight - top - gutter);
+
+    setSearchDropdownStyle({
+      left,
+      top,
+      width: desiredWidth,
+      maxHeight,
+    });
   };
 
   const handleSearchChange = (e) => {
@@ -319,11 +366,16 @@ const NavBar = ({
     setSearchQuery(query);
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     if (query.trim().length < 2) {
+      searchRequestIdRef.current += 1;
       setSearchResults([]);
       setSearchDropdownOpen(false);
       setSearchLoading(false);
+      setSearchDropdownStyle(null);
       return;
     }
+
+    const requestId = searchRequestIdRef.current + 1;
+    searchRequestIdRef.current = requestId;
     setSearchLoading(true);
     setSearchDropdownOpen(true);
     searchDebounceRef.current = setTimeout(async () => {
@@ -332,19 +384,60 @@ const NavBar = ({
           `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query.trim())}`,
         );
         const json = await res.json();
+        if (searchRequestIdRef.current !== requestId) return;
         setSearchResults(json?.meals ?? []);
       } catch {
+        if (searchRequestIdRef.current !== requestId) return;
         setSearchResults([]);
       } finally {
-        setSearchLoading(false);
+        if (searchRequestIdRef.current === requestId) {
+          setSearchLoading(false);
+        }
       }
     }, 420);
   };
 
+  useEffect(() => {
+    if (!searchDropdownOpen || searchQuery.trim().length < 2) {
+      setSearchDropdownStyle(null);
+      return undefined;
+    }
+
+    updateSearchDropdownPosition();
+
+    const handleViewportChange = () => {
+      updateSearchDropdownPosition();
+    };
+
+    window.addEventListener("resize", handleViewportChange);
+    window.addEventListener("scroll", handleViewportChange, true);
+
+    return () => {
+      window.removeEventListener("resize", handleViewportChange);
+      window.removeEventListener("scroll", handleViewportChange, true);
+    };
+  }, [searchDropdownOpen, searchQuery, mobileSearchOpen]);
+
   const renderSearchDropdown = () => {
-    if (!searchDropdownOpen || searchQuery.trim().length < 2) return null;
-    return (
-      <div className="absolute left-0 right-0 top-full z-80 mt-2 overflow-hidden rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.99),rgba(9,14,27,0.99))] shadow-[0_20px_44px_rgba(2,8,20,0.7)]">
+    if (
+      !searchDropdownOpen ||
+      searchQuery.trim().length < 2 ||
+      !searchDropdownStyle ||
+      typeof document === "undefined"
+    ) {
+      return null;
+    }
+
+    return createPortal(
+      <div
+        ref={searchDropdownRef}
+        className="fixed z-90 overflow-hidden rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.99),rgba(9,14,27,0.99))] shadow-[0_20px_44px_rgba(2,8,20,0.7)]"
+        style={{
+          left: searchDropdownStyle.left,
+          top: searchDropdownStyle.top,
+          width: searchDropdownStyle.width,
+        }}
+      >
         {searchLoading ? (
           <div className="flex items-center gap-3 px-4 py-5">
             <span className="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-[#2b3d5e] border-t-[#63e6be]" />
@@ -387,34 +480,49 @@ const NavBar = ({
                 Clear
               </button>
             </div>
-            <div className="max-h-68 divide-y divide-[#0d1524] overflow-y-auto [scrollbar-color:#1c2b43_transparent] [scrollbar-width:thin]">
+            <div
+              className="divide-y divide-[#0d1524] overflow-y-auto [scrollbar-color:#1c2b43_transparent] [scrollbar-width:thin]"
+              style={{ maxHeight: searchDropdownStyle.maxHeight }}
+            >
               {searchResults.slice(0, 8).map((meal) => {
                 const price = getSearchItemPrice(meal.idMeal);
                 const rating = getSearchItemRating(meal.idMeal);
                 return (
                   <div
                     key={meal.idMeal}
-                    className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-[rgba(99,230,190,0.04)]"
+                    onClick={() => {
+                      setSearchDetailsMeal(meal);
+                      setSearchDropdownOpen(false);
+                      setMobileSearchOpen(false);
+                    }}
+                    className="group relative cursor-pointer px-4 py-3.5 transition-colors duration-200 hover:bg-[rgba(99,230,190,0.06)]"
                   >
-                    <div className="relative shrink-0">
-                      <img
-                        src={meal.strMealThumb}
-                        alt={meal.strMeal}
-                        className="h-13 w-13 rounded-xl border border-[#1c2b43] object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                      <span className="absolute -right-1 -top-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#1a2035] border border-[#2f354a]">
-                        <FaFire size={8} className="text-[#ff9a76]" />
-                      </span>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold text-[#eef2ff]">
-                        {meal.strMeal}
-                      </p>
-                      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                        <span className="text-xs font-black text-[#63e6be]">
-                          ৳{price}
+                    {/* Hover left accent bar */}
+                    <span className="pointer-events-none absolute left-0 top-1/2 h-0 w-0.5 -translate-y-1/2 rounded-full bg-[#63e6be] transition-all duration-200 group-hover:h-3/4" />
+
+                    <div className="relative flex items-center gap-3 pr-13 sm:pr-15">
+                      <div className="relative shrink-0">
+                        <img
+                          src={meal.strMealThumb}
+                          alt={meal.strMeal}
+                          className="h-14 w-14 rounded-xl border border-[#1c2b43] object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <span className="absolute -right-1 -top-1 flex h-4.5 w-4.5 items-center justify-center rounded-full border border-[#2f354a] bg-[#1a2035]">
+                          <FaFire size={8} className="text-[#ff9a76]" />
                         </span>
-                        <div className="flex items-center gap-0.5">
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="truncate pr-1 text-sm font-bold text-[#eef2ff] transition-colors duration-200 group-hover:text-[#63e6be] sm:text-[0.95rem]">
+                            {meal.strMeal}
+                          </p>
+                          <span className="shrink-0 text-xs font-black text-[#63e6be] sm:text-[0.8rem]">
+                            ৳{price}
+                          </span>
+                        </div>
+
+                        <div className="mt-1 flex items-center gap-1">
                           {[1, 2, 3, 4, 5].map((s) => (
                             <FaStar
                               key={s}
@@ -426,42 +534,53 @@ const NavBar = ({
                               }
                             />
                           ))}
-                          <span className="ml-0.5 text-[0.65rem] font-semibold text-[#5e6f94]">
+                          <span className="ml-1 text-[0.68rem] font-semibold text-[#7d8aa8]">
                             {rating}
                           </span>
                         </div>
-                        {meal.strCategory && (
-                          <span className="rounded-full border border-[#1c2b43] bg-[rgba(16,24,42,0.7)] px-1.5 py-0.5 text-[0.6rem] font-semibold text-[#5e6f94]">
-                            {meal.strCategory}
-                          </span>
-                        )}
+
+                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                          {meal.strCategory && (
+                            <span className="max-w-full truncate rounded-full border border-[#1c2b43] bg-[rgba(16,24,42,0.76)] px-2 py-0.5 text-[0.62rem] font-semibold text-[#93a3c2]">
+                              {meal.strCategory}
+                            </span>
+                          )}
+                          {meal.strArea && (
+                            <span className="hidden rounded-full border border-[#1a2740] bg-[rgba(99,230,190,0.06)] px-2 py-0.5 text-[0.62rem] font-semibold text-[#63e6be]/80 sm:inline-flex">
+                              {meal.strArea}
+                            </span>
+                          )}
+                        </div>
                       </div>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAddToCart(
+                            {
+                              idMeal: meal.idMeal,
+                              strMeal: meal.strMeal,
+                              strMealThumb: meal.strMealThumb,
+                            },
+                            price,
+                          );
+                          clearSearch();
+                          setMobileSearchOpen(false);
+                        }}
+                        className="absolute right-0 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-[#63e6be]/35 bg-[linear-gradient(135deg,rgba(99,230,190,0.15),rgba(77,217,172,0.08))] text-[#63e6be] shadow-[0_4px_12px_rgba(99,230,190,0.14)] transition-all duration-200 hover:scale-105 hover:border-[#63e6be]/65 hover:bg-[linear-gradient(135deg,rgba(99,230,190,0.24),rgba(77,217,172,0.14))] hover:shadow-[0_8px_18px_rgba(99,230,190,0.24)]"
+                        aria-label="Add to cart"
+                      >
+                        <FaCartShopping size={11} />
+                      </button>
                     </div>
-                    <button
-                      onClick={() => {
-                        onAddToCart(
-                          {
-                            idMeal: meal.idMeal,
-                            strMeal: meal.strMeal,
-                            strMealThumb: meal.strMealThumb,
-                          },
-                          price,
-                        );
-                        clearSearch();
-                      }}
-                      className="shrink-0 inline-flex translate-x-1 items-center gap-1.5 rounded-xl bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] px-3 py-2 text-xs font-bold text-[#061510] opacity-0 shadow-[0_4px_12px_rgba(99,230,190,0.3)] transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 hover:brightness-110"
-                      aria-label="Add to cart"
-                    >
-                      <FaCartShopping size={11} />
-                      Add
-                    </button>
                   </div>
                 );
               })}
             </div>
           </>
         )}
-      </div>
+      </div>,
+      document.body,
     );
   };
   // ── End search helpers ───────────────────────────────────────────────────────
@@ -505,7 +624,7 @@ const NavBar = ({
           </ul>
 
           <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
-            <div className="relative hidden sm:block">
+            <div ref={desktopSearchRef} className="relative hidden sm:block">
               <FaMagnifyingGlass
                 className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-[#5e6f94]"
                 size={13}
@@ -519,7 +638,7 @@ const NavBar = ({
                     setSearchDropdownOpen(true);
                 }}
                 placeholder="Search food..."
-                className="rounded-full border border-[#1c2b43] bg-[rgba(16,24,42,0.7)] pl-9 pr-8 py-2 text-sm text-[#c8d3eb] placeholder:text-[#5e6f94] outline-none transition-all w-40 md:w-52 hover:border-[#32507a] hover:shadow-[0_0_0_3px_rgba(99,230,190,0.08)] focus:border-[#63e6be] focus:shadow-[0_0_0_3px_rgba(99,230,190,0.14)]"
+                className="w-44 rounded-full border border-[#1c2b43] bg-[rgba(16,24,42,0.7)] py-2 pl-9 pr-8 text-sm text-[#c8d3eb] placeholder:text-[#5e6f94] outline-none transition-all hover:border-[#32507a] hover:shadow-[0_0_0_3px_rgba(99,230,190,0.08)] focus:border-[#63e6be] focus:shadow-[0_0_0_3px_rgba(99,230,190,0.14)] md:w-56 xl:w-60"
               />
               {searchQuery && (
                 <button
@@ -684,6 +803,7 @@ const NavBar = ({
                   setCategoriesOpen(false);
                   setMobileMenuOpen(false);
                   setMobileSearchOpen(false);
+                  setSearchDropdownOpen(false);
                 }}
                 aria-label="Toggle cart menu"
               >
@@ -861,6 +981,7 @@ const NavBar = ({
                   setCategoriesOpen(false);
                   setMobileMenuOpen(false);
                   setMobileSearchOpen(false);
+                  setSearchDropdownOpen(false);
                 }}
                 aria-label="Toggle user menu"
               >
@@ -898,6 +1019,7 @@ const NavBar = ({
                 setFavoriteOpen(false);
                 setUserOpen(false);
                 setMobileSearchOpen(false);
+                setSearchDropdownOpen(false);
               }}
               aria-label="Toggle mobile menu"
             >
@@ -970,7 +1092,7 @@ const NavBar = ({
       {mobileSearchOpen && (
         <div className="sm:hidden border-t border-[#1c2b43] bg-[rgba(9,14,28,0.98)]">
           <div className="container mx-auto px-4 py-3">
-            <div className="relative">
+            <div ref={mobileSearchRef} className="relative">
               <FaMagnifyingGlass
                 className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-[#5e6f94]"
                 size={13}
@@ -1075,6 +1197,27 @@ const NavBar = ({
             )}
           </div>
         </div>
+      )}
+
+      {searchDetailsMeal && (
+        <ViewDetailsModal
+          idMeal={searchDetailsMeal.idMeal}
+          offer={{
+            meal: searchDetailsMeal,
+            cartFood: {
+              idMeal: searchDetailsMeal.idMeal,
+              strMeal: searchDetailsMeal.strMeal,
+              strMealThumb: searchDetailsMeal.strMealThumb,
+            },
+            finalPrice: getSearchItemPrice(searchDetailsMeal.idMeal),
+            basePrice: getSearchItemPrice(searchDetailsMeal.idMeal),
+            offerLabel: "Fresh Pick",
+            borderAccent: "#63e6be",
+            glowColor: "rgba(99,230,190,0.34)",
+          }}
+          onClose={() => setSearchDetailsMeal(null)}
+          onAddToCart={onAddToCart}
+        />
       )}
 
       {checkoutOpen &&

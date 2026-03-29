@@ -69,7 +69,7 @@ const Footer = () => {
 
       <div className="container relative z-10 mx-auto px-4 md:px-6 lg:px-8">
         {/* ── App Download Banner ── */}
-        <div className="mt-12 rounded-2xl border border-[#1c2b43] bg-[linear-gradient(135deg,rgba(16,24,44,0.98),rgba(9,14,27,0.98))] p-6 shadow-[0_16px_40px_rgba(2,8,20,0.4)] sm:p-8 md:flex md:items-center md:justify-between md:gap-8">
+        <div className="relative mt-12 overflow-hidden rounded-2xl border border-[#1c2b43] bg-[linear-gradient(135deg,rgba(16,24,44,0.98),rgba(9,14,27,0.98))] p-6 shadow-[0_16px_40px_rgba(2,8,20,0.4)] sm:p-8 md:flex md:items-center md:justify-between md:gap-8">
           <div className="pointer-events-none absolute left-0 top-0 h-full w-full rounded-2xl bg-[radial-gradient(ellipse_at_20%_50%,rgba(99,230,190,0.07)_0%,transparent_60%)]" />
           <div className="relative">
             <p className="text-xs font-extrabold uppercase tracking-[0.24em] text-[#ff8f6a]">
