@@ -8,6 +8,7 @@ import {
   FaStar,
 } from "react-icons/fa6";
 import ViewDetailsModal from "../Offers/ViewDetailsModal";
+import { useToast } from "../Toast/useToast";
 
 const CatagoriesFood = ({
   manageMenuExplore,
@@ -17,6 +18,7 @@ const CatagoriesFood = ({
   onToggleFavorite,
   favoriteItems,
 }) => {
+  const toast = useToast();
   const data = use(manageMenuExplore);
   const mealsData = data?.meals ?? null;
   const [selectedMealId, setSelectedMealId] = useState(null);
@@ -219,7 +221,17 @@ const CatagoriesFood = ({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        const isFav = favoriteItems.some(
+                          (item) => item.id === meal.idMeal,
+                        );
                         onToggleFavorite(meal, price);
+                        if (!isFav) {
+                          toast.success(
+                            `${meal.strMeal} added to favorites! ❤️`,
+                          );
+                        } else {
+                          toast.info(`${meal.strMeal} removed from favorites`);
+                        }
                       }}
                       className={`grid h-10 w-10 place-items-center rounded-xl border transition-all duration-300 ${
                         isFavorite
@@ -240,6 +252,7 @@ const CatagoriesFood = ({
                       onClick={(e) => {
                         e.stopPropagation();
                         onAddToCart(meal, price);
+                        toast.success(`${meal.strMeal} added to cart! 🛒`);
                       }}
                       className="inline-flex items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] px-3 py-2.5 text-sm font-bold text-[#061510] shadow-[0_6px_18px_rgba(99,230,190,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_22px_rgba(99,230,190,0.42)] active:translate-y-0"
                     >
@@ -251,6 +264,7 @@ const CatagoriesFood = ({
                       onClick={(e) => {
                         e.stopPropagation();
                         onBuyNow?.(meal, price);
+                        toast.success(`${meal.strMeal} ready to checkout! 🎉`);
                       }}
                       className="inline-flex items-center justify-center gap-2 rounded-xl border border-[rgba(255,209,102,0.45)] bg-[linear-gradient(135deg,#ffd166,#ffb347)] px-3 py-2.5 text-sm font-black text-[#2a1800] shadow-[0_8px_20px_rgba(255,209,102,0.24)] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-125 active:translate-y-0"
                     >

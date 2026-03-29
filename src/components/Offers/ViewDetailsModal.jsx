@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { FaCheck, FaCopy, FaXmark } from "react-icons/fa6";
+import { useToast } from "../Toast/useToast";
 
 const ViewDetailsModal = ({
   idMeal,
@@ -10,6 +11,7 @@ const ViewDetailsModal = ({
   onBuyNow,
   buyNowScrollToTop = false,
 }) => {
+  const toast = useToast();
   const [mealData, setMealData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -75,6 +77,7 @@ const ViewDetailsModal = ({
 
     await navigator.clipboard.writeText(String(displayMeal.idMeal));
     setCopiedMealId(true);
+    toast.success(`Meal ID copied to clipboard! 📋`);
 
     if (mealIdCopyTimerRef.current) {
       clearTimeout(mealIdCopyTimerRef.current);
@@ -307,6 +310,9 @@ const ViewDetailsModal = ({
                           offerType: offer.offerType,
                           offerLabel: offer.offerLabel,
                         });
+                        toast.success(
+                          `${displayMeal?.strMeal || offer.cartFood?.strMeal} added to cart! 🛒`,
+                        );
                         onClose();
                       }}
                       className="rounded-xl border border-[#2b3d5e] bg-[rgba(10,16,30,0.72)] py-2.5 text-xs font-bold text-[#c8d3eb] transition-colors hover:border-[#63e6be] hover:text-[#63e6be]"
@@ -322,6 +328,9 @@ const ViewDetailsModal = ({
                             offerLabel: offer.offerLabel,
                             scrollToTop: buyNowScrollToTop,
                           });
+                          toast.success(
+                            `${displayMeal?.strMeal || offer.cartFood?.strMeal} ready to checkout! 🎉`,
+                          );
                           onClose();
                         }}
                         className="rounded-xl py-2.5 text-xs font-bold text-[#071510] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110"

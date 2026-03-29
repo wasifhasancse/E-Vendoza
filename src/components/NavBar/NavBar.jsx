@@ -1,29 +1,54 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
+  FaArrowRightToBracket,
   FaBars,
+  FaBell,
   FaBolt,
   FaBowlFood,
   FaCartShopping,
   FaCheck,
+  FaChevronRight,
   FaCircleCheck,
+  FaCircleExclamation,
+  FaClockRotateLeft,
   FaCopy,
+  FaCreditCard,
+  FaDatabase,
+  FaEnvelope,
+  FaEye,
+  FaEyeSlash,
   FaFire,
   FaGear,
   FaHeart,
+  FaKey,
+  FaLocationDot,
+  FaLock,
   FaMagnifyingGlass,
   FaMinus,
+  FaPencil,
+  FaPhone,
   FaPlus,
   FaRightFromBracket,
+  FaShield,
   FaSpinner,
   FaStar,
+  FaToggleOff,
+  FaToggleOn,
   FaTrash,
+  FaTrashCan,
   FaUser,
+  FaUserMinus,
+  FaUserPlus,
+  FaUtensils,
   FaXmark,
 } from "react-icons/fa6";
+import AuthModal from "../Auth/AuthModal";
 import ViewDetailsModal from "../Offers/ViewDetailsModal";
+import { useToast } from "../Toast/useToast";
 
 const NAV_LINKS = ["Home", "Menu", "Food", "About"];
+const AUTH_SESSION_STORAGE_KEY = "e-vendoza-auth-session";
 
 const NavBar = ({
   addToCartItems,
@@ -37,13 +62,70 @@ const NavBar = ({
   onRemoveFavorite,
   onAddToCart,
   onClearCart,
+  onClearFavorites,
 }) => {
+  const toast = useToast();
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [favoriteOpen, setFavoriteOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
+  const [orderHistoryOpen, setOrderHistoryOpen] = useState(false);
+  const [myProfileOpen, setMyProfileOpen] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    fullName: "",
+    phone: "",
+    location: "",
+    bio: "",
+  });
+  const [profileErrors, setProfileErrors] = useState({});
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [securityOpen, setSecurityOpen] = useState(false);
+  const [securityForm, setSecurityForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [securityErrors, setSecurityErrors] = useState({});
+  const [securitySuccess, setSecuritySuccess] = useState("");
+  const [isSavingSecurity, setIsSavingSecurity] = useState(false);
+  const [showSecPw, setShowSecPw] = useState({
+    current: false,
+    next: false,
+    confirm: false,
+  });
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settings, setSettings] = useState(() => {
+    try {
+      const raw = window.localStorage.getItem("e-vendoza-settings");
+      return raw
+        ? JSON.parse(raw)
+        : {
+            orderNotify: true,
+            promoNotify: true,
+            soundFx: false,
+            compactCart: false,
+          };
+    } catch {
+      return {
+        orderNotify: true,
+        promoNotify: true,
+        soundFx: false,
+        compactCart: false,
+      };
+    }
+  });
+  const [orderHistory, setOrderHistory] = useState(() => {
+    try {
+      const raw = window.localStorage.getItem("e-vendoza-order-history");
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [isClearingCart, setIsClearingCart] = useState(false);
   const [checkoutForm, setCheckoutForm] = useState({
@@ -74,6 +156,8 @@ const NavBar = ({
   const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
   const [searchDetailsMeal, setSearchDetailsMeal] = useState(null);
   const [searchDropdownStyle, setSearchDropdownStyle] = useState(null);
+  const [authModalMode, setAuthModalMode] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const allCategories = categories ?? [];
 
   const totalItems = addToCartItems.reduce(
@@ -117,6 +201,209 @@ const NavBar = ({
     setIsPlacingOrder(false);
     setOrderSuccess(false);
     setOrderNumber(null);
+  };
+
+  const openAuthModal = (mode) => {
+    closeAllPanels();
+    setAuthModalMode(mode);
+  };
+
+  const PROFILE_EXTRA_KEY = (email) => `e-vendoza-profile-${email}`;
+
+  const loadExtendedProfile = (email) => {
+    try {
+      const raw = window.localStorage.getItem(PROFILE_EXTRA_KEY(email));
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  };
+
+  const openMyProfile = () => {
+    setUserOpen(false);
+    const extra = currentUser ? loadExtendedProfile(currentUser.email) : {};
+    setProfileForm({
+      fullName: currentUser?.fullName ?? "",
+      phone: extra.phone ?? "",
+      location: extra.location ?? "",
+      bio: extra.bio ?? "",
+    });
+    setProfileErrors({});
+    setIsEditingProfile(false);
+    setMyProfileOpen(true);
+  };
+
+  const handleSaveProfile = () => {
+    const errors = {};
+    if (!profileForm.fullName.trim()) errors.fullName = "Full name is required";
+    if (
+      profileForm.phone &&
+      !/^[0-9+\s()\-]{7,20}$/.test(profileForm.phone.trim())
+    )
+      errors.phone = "Enter a valid phone number";
+    setProfileErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+    setIsSavingProfile(true);
+    setTimeout(() => {
+      const updatedUser = {
+        ...currentUser,
+        fullName: profileForm.fullName.trim(),
+      };
+      // Update session storage
+      const sessionPayload = JSON.stringify(updatedUser);
+      if (window.localStorage.getItem("e-vendoza-auth-session")) {
+        window.localStorage.setItem("e-vendoza-auth-session", sessionPayload);
+      } else {
+        window.sessionStorage.setItem("e-vendoza-auth-session", sessionPayload);
+      }
+      // Update stored users list
+      try {
+        const raw = window.localStorage.getItem("e-vendoza-auth-users");
+        const users = raw ? JSON.parse(raw) : [];
+        const idx = users.findIndex((u) => u.email === currentUser.email);
+        if (idx !== -1) {
+          users[idx] = { ...users[idx], fullName: profileForm.fullName.trim() };
+          window.localStorage.setItem(
+            "e-vendoza-auth-users",
+            JSON.stringify(users),
+          );
+        }
+      } catch (_) {
+        /* ignore */
+      }
+      // Save extended profile fields
+      window.localStorage.setItem(
+        PROFILE_EXTRA_KEY(currentUser.email),
+        JSON.stringify({
+          phone: profileForm.phone.trim(),
+          location: profileForm.location.trim(),
+          bio: profileForm.bio.trim(),
+        }),
+      );
+      setCurrentUser(updatedUser);
+      setIsEditingProfile(false);
+      setIsSavingProfile(false);
+      toast.success("Profile updated successfully! ✨");
+    }, 700);
+  };
+
+  const saveSetting = (key, value) => {
+    const updated = { ...settings, [key]: value };
+    setSettings(updated);
+    window.localStorage.setItem("e-vendoza-settings", JSON.stringify(updated));
+  };
+
+  const openSecurity = () => {
+    setUserOpen(false);
+    setSecurityForm({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+    setSecurityErrors({});
+    setSecuritySuccess("");
+    setShowDeleteConfirm(false);
+    setSecurityOpen(true);
+  };
+
+  const openSettings = () => {
+    setUserOpen(false);
+    setSettingsOpen(true);
+  };
+
+  const handleChangePassword = () => {
+    const errors = {};
+    const isDefaultUser = currentUser?.email === "user@gmail.com";
+    if (!securityForm.currentPassword)
+      errors.currentPassword = "Current password is required";
+    if (securityForm.newPassword.length < 6)
+      errors.newPassword = "New password must be at least 6 characters";
+    if (securityForm.confirmPassword !== securityForm.newPassword)
+      errors.confirmPassword = "Passwords do not match";
+    setSecurityErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+    setIsSavingSecurity(true);
+    setTimeout(() => {
+      setIsSavingSecurity(false);
+      if (isDefaultUser) {
+        setSecurityErrors({
+          currentPassword: "Demo account password cannot be changed",
+        });
+        return;
+      }
+      try {
+        const raw = window.localStorage.getItem("e-vendoza-auth-users");
+        const users = raw ? JSON.parse(raw) : [];
+        const idx = users.findIndex((u) => u.email === currentUser.email);
+        if (
+          idx === -1 ||
+          users[idx].password !== securityForm.currentPassword
+        ) {
+          setSecurityErrors({ currentPassword: "Incorrect current password" });
+          return;
+        }
+        users[idx].password = securityForm.newPassword;
+        window.localStorage.setItem(
+          "e-vendoza-auth-users",
+          JSON.stringify(users),
+        );
+        setSecuritySuccess("Password changed successfully!");
+        setSecurityForm({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+        toast.success("Password changed successfully! 🔒");
+      } catch (_) {
+        setSecurityErrors({
+          currentPassword: "Something went wrong. Try again.",
+        });
+      }
+    }, 800);
+  };
+
+  const handleDeleteAccount = () => {
+    if (currentUser?.email === "user@gmail.com") {
+      toast.error("Demo account cannot be deleted.");
+      setShowDeleteConfirm(false);
+      return;
+    }
+    try {
+      const raw = window.localStorage.getItem("e-vendoza-auth-users");
+      const users = raw ? JSON.parse(raw) : [];
+      const updated = users.filter((u) => u.email !== currentUser.email);
+      window.localStorage.setItem(
+        "e-vendoza-auth-users",
+        JSON.stringify(updated),
+      );
+    } catch (_) {
+      /* ignore */
+    }
+    window.localStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+    window.sessionStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+    window.localStorage.removeItem(PROFILE_EXTRA_KEY(currentUser.email));
+    setCurrentUser(null);
+    setSecurityOpen(false);
+    setShowDeleteConfirm(false);
+    toast.info("Account deleted. Goodbye! 👋");
+  };
+
+  const handleLoginSuccess = (user) => {
+    setCurrentUser(user);
+    setAuthModalMode(null);
+    setUserOpen(false);
+    setMobileMenuOpen(false);
+    toast.success(`Welcome back, ${user.fullName}! 👋`);
+    scrollToSection("hero-section");
+  };
+
+  const handleLogout = () => {
+    window.localStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+    window.sessionStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+    setCurrentUser(null);
+    setUserOpen(false);
+    setMobileMenuOpen(false);
+    toast.info(`Logged out successfully! See you soon 👋`);
   };
 
   const closeCheckout = () => {
@@ -219,10 +506,32 @@ const NavBar = ({
       setMobileSearchOpen(false);
     };
 
+    const handleOpenAuthModal = () => {
+      closeAllPanels();
+      setAuthModalMode("login");
+    };
+
     window.addEventListener("open-cart-panel", handleOpenCartPanel);
+    window.addEventListener("open-auth-modal", handleOpenAuthModal);
     return () => {
       window.removeEventListener("open-cart-panel", handleOpenCartPanel);
+      window.removeEventListener("open-auth-modal", handleOpenAuthModal);
     };
+  }, []);
+
+  useEffect(() => {
+    try {
+      const session =
+        window.localStorage.getItem(AUTH_SESSION_STORAGE_KEY) ||
+        window.sessionStorage.getItem(AUTH_SESSION_STORAGE_KEY);
+      const parsed = session ? JSON.parse(session) : null;
+
+      if (parsed?.email) {
+        setCurrentUser(parsed);
+      }
+    } catch {
+      setCurrentUser(null);
+    }
   }, []);
 
   useEffect(() => {
@@ -262,11 +571,36 @@ const NavBar = ({
     if (Object.keys(errors).length > 0) return;
     setIsPlacingOrder(true);
     setTimeout(() => {
+      const newOrderNum = Math.floor(100000 + Math.random() * 900000);
+      const newOrder = {
+        id: newOrderNum,
+        date: new Date().toISOString(),
+        items: addToCartItems.map((i) => ({
+          name: i.name,
+          quantity: i.quantity,
+          price: i.price,
+          image: i.image,
+        })),
+        total:
+          addToCartItems.reduce((s, i) => s + i.price * i.quantity, 0) + 60,
+        address: checkoutForm.address,
+        payment: checkoutForm.payment,
+        status: "Confirmed",
+      };
+      setOrderHistory((prev) => {
+        const updated = [newOrder, ...prev];
+        window.localStorage.setItem(
+          "e-vendoza-order-history",
+          JSON.stringify(updated),
+        );
+        return updated;
+      });
       setIsPlacingOrder(false);
       setOrderSuccess(true);
-      setOrderNumber(Math.floor(100000 + Math.random() * 900000));
+      setOrderNumber(newOrderNum);
       setOrderNumberCopied(false);
       onClearCart?.();
+      toast.success(`Order placed successfully! 🎉`);
     }, 1800);
   };
 
@@ -275,6 +609,7 @@ const NavBar = ({
 
     await navigator.clipboard.writeText(String(orderNumber));
     setOrderNumberCopied(true);
+    toast.success(`Order #${orderNumber} copied! 📋`);
 
     if (orderNumberCopyTimerRef.current) {
       clearTimeout(orderNumberCopyTimerRef.current);
@@ -292,6 +627,7 @@ const NavBar = ({
 
     clearCartTimerRef.current = setTimeout(() => {
       onClearCart?.();
+      toast.info(`Cart cleared! All items removed 🧹`);
       setIsClearingCart(false);
     }, 350);
   };
@@ -564,6 +900,7 @@ const NavBar = ({
                             },
                             price,
                           );
+                          toast.success(`${meal.strMeal} added to cart! 🛒`);
                           clearSearch();
                           setMobileSearchOpen(false);
                         }}
@@ -745,7 +1082,12 @@ const NavBar = ({
                                 </p>
                               </div>
                               <button
-                                onClick={() => onRemoveFavorite(item.id)}
+                                onClick={() => {
+                                  onRemoveFavorite(item.id);
+                                  toast.info(
+                                    `${item.name} removed from favorites 💔`,
+                                  );
+                                }}
                                 className="grid h-8 w-8 place-items-center rounded-lg border border-[#2b3d5e] text-[#ff9a76] transition-colors hover:border-[#ff9a76]"
                                 aria-label="Remove favorite"
                               >
@@ -754,7 +1096,7 @@ const NavBar = ({
                             </div>
 
                             <button
-                              onClick={() =>
+                              onClick={() => {
                                 onAddToCart(
                                   {
                                     idMeal: item.id,
@@ -762,8 +1104,9 @@ const NavBar = ({
                                     strMealThumb: item.image,
                                   },
                                   item.price,
-                                )
-                              }
+                                );
+                                toast.success(`${item.name} added to cart! 🛒`);
+                              }}
                               className="mt-2.5 w-full rounded-lg bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] py-2 text-sm font-bold text-[#071510]"
                             >
                               Add to Cart
@@ -875,7 +1218,12 @@ const NavBar = ({
                                 </div>
                               </div>
                               <button
-                                onClick={() => onRemoveItem(item.id)}
+                                onClick={() => {
+                                  onRemoveItem(item.id);
+                                  toast.info(
+                                    `${item.name} removed from cart 🗑️`,
+                                  );
+                                }}
                                 className="grid h-8 w-8 place-items-center rounded-lg border border-[#2b3d5e] text-[#ff9a76] transition-colors hover:border-[#ff9a76]"
                                 aria-label="Remove item"
                               >
@@ -975,6 +1323,10 @@ const NavBar = ({
               <button
                 className="h-9 w-9 shrink-0 overflow-hidden rounded-full ring-2 ring-[#63e6be]/30 hover:ring-[#63e6be]/60 transition-all"
                 onClick={() => {
+                  if (!currentUser) {
+                    openAuthModal("login");
+                    return;
+                  }
                   setUserOpen((prev) => !prev);
                   setCartOpen(false);
                   setFavoriteOpen(false);
@@ -987,25 +1339,191 @@ const NavBar = ({
               >
                 <img
                   src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
-                  alt="User"
+                  alt={currentUser ? currentUser.fullName : "User"}
                   className="h-full w-full object-cover"
                 />
               </button>
 
-              {userOpen && (
-                <div className="absolute right-0 z-70 mt-2 w-[min(14rem,calc(100vw-1.5rem))] rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] p-2 shadow-[0_20px_40px_rgba(2,8,20,0.55)]">
-                  <button className="w-full inline-flex items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-[#c8d3eb] hover:bg-[rgba(255,255,255,0.05)]">
-                    <FaUser size={13} />
-                    Profile
-                  </button>
-                  <button className="w-full inline-flex items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-[#c8d3eb] hover:bg-[rgba(255,255,255,0.05)]">
-                    <FaGear size={13} />
-                    Settings
-                  </button>
-                  <button className="w-full inline-flex items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-[#ff9a76] hover:bg-[rgba(255,154,118,0.08)]">
-                    <FaRightFromBracket size={13} />
-                    Logout
-                  </button>
+              {userOpen && currentUser && (
+                <div className="absolute right-0 z-70 mt-2 w-[min(20rem,calc(100vw-1rem))] rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(12,18,34,0.99),rgba(7,11,24,0.99))] shadow-[0_24px_48px_rgba(2,8,20,0.65)] overflow-hidden">
+                  {/* Profile header */}
+                  <div className="relative overflow-hidden px-4 py-4">
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(99,230,190,0.12),transparent_65%)]" />
+                    <div className="relative flex items-center gap-3">
+                      <div className="relative shrink-0">
+                        <div className="h-12 w-12 overflow-hidden rounded-full border-2 border-[#63e6be]/50 shadow-[0_0_12px_rgba(99,230,190,0.3)]">
+                          <img
+                            src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
+                            alt={currentUser.fullName}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                        <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#090e1c] bg-[#63e6be]" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-extrabold text-[#eef2ff]">
+                          {currentUser.fullName}
+                        </p>
+                        <p className="mt-0.5 flex items-center gap-1 truncate text-[0.72rem] text-[#8897b5]">
+                          <FaEnvelope
+                            size={10}
+                            className="shrink-0 text-[#63e6be]"
+                          />
+                          {currentUser.email}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[rgba(99,230,190,0.28)] bg-[rgba(99,230,190,0.08)] px-2.5 py-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#63e6be] animate-pulse" />
+                      <span className="text-[0.65rem] font-extrabold uppercase tracking-[0.16em] text-[#63e6be]">
+                        Active Session
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-[#1a2840]" />
+
+                  {/* Stats row */}
+                  <div className="grid grid-cols-2 divide-x divide-[#1a2840] border-b border-[#1a2840]">
+                    <button
+                      onClick={() => {
+                        setUserOpen(false);
+                        setCartOpen(true);
+                      }}
+                      className="flex flex-col items-center gap-0.5 py-3 transition-colors hover:bg-[rgba(99,230,190,0.05)]"
+                    >
+                      <span className="text-lg font-black text-[#63e6be]">
+                        {totalItems}
+                      </span>
+                      <span className="flex items-center gap-1 text-[0.67rem] font-semibold text-[#7d8aa8]">
+                        <FaCartShopping size={10} /> Cart Items
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setUserOpen(false);
+                        setFavoriteOpen(true);
+                      }}
+                      className="flex flex-col items-center gap-0.5 py-3 transition-colors hover:bg-[rgba(255,143,106,0.05)]"
+                    >
+                      <span className="text-lg font-black text-[#ff8f6a]">
+                        {favoriteItems.length}
+                      </span>
+                      <span className="flex items-center gap-1 text-[0.67rem] font-semibold text-[#7d8aa8]">
+                        <FaHeart size={10} /> Favourites
+                      </span>
+                    </button>
+                  </div>
+
+                  {/* Menu items */}
+                  <div className="p-2 space-y-0.5">
+                    <button
+                      onClick={openMyProfile}
+                      className="group w-full flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all hover:bg-[rgba(99,230,190,0.07)]"
+                    >
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-[#223252] bg-[rgba(99,230,190,0.08)] text-[#63e6be] transition-colors group-hover:border-[#63e6be]/40">
+                        <FaUser size={13} />
+                      </span>
+                      <span className="flex-1 text-left">
+                        <span className="block text-sm font-semibold text-[#dce6ff]">
+                          My Profile
+                        </span>
+                        <span className="block text-[0.68rem] text-[#617393]">
+                          View &amp; edit account
+                        </span>
+                      </span>
+                      <FaChevronRight
+                        size={11}
+                        className="text-[#3e5070] transition-transform group-hover:translate-x-0.5"
+                      />
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setUserOpen(false);
+                        setOrderHistoryOpen(true);
+                      }}
+                      className="group w-full flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all hover:bg-[rgba(255,209,102,0.06)]"
+                    >
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-[#223252] bg-[rgba(255,209,102,0.08)] text-[#ffd166] transition-colors group-hover:border-[#ffd166]/40">
+                        <FaClockRotateLeft size={13} />
+                      </span>
+                      <span className="flex-1 text-left">
+                        <span className="block text-sm font-semibold text-[#dce6ff]">
+                          Order History
+                        </span>
+                        <span className="block text-[0.68rem] text-[#617393]">
+                          {orderHistory.length} past order
+                          {orderHistory.length !== 1 ? "s" : ""}
+                        </span>
+                      </span>
+                      <FaChevronRight
+                        size={11}
+                        className="text-[#3e5070] transition-transform group-hover:translate-x-0.5"
+                      />
+                    </button>
+
+                    <button
+                      onClick={openSecurity}
+                      className="group w-full flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all hover:bg-[rgba(255,255,255,0.04)]"
+                    >
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-[#223252] bg-[rgba(255,255,255,0.04)] text-[#9ba5be] transition-colors group-hover:border-[#4a5a7a]/60">
+                        <FaShield size={13} />
+                      </span>
+                      <span className="flex-1 text-left">
+                        <span className="block text-sm font-semibold text-[#dce6ff]">
+                          Security
+                        </span>
+                        <span className="block text-[0.68rem] text-[#617393]">
+                          Password &amp; account safety
+                        </span>
+                      </span>
+                      <FaChevronRight
+                        size={11}
+                        className="text-[#3e5070] transition-transform group-hover:translate-x-0.5"
+                      />
+                    </button>
+
+                    <button
+                      onClick={openSettings}
+                      className="group w-full flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all hover:bg-[rgba(255,255,255,0.04)]"
+                    >
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-[#223252] bg-[rgba(255,255,255,0.04)] text-[#9ba5be] transition-colors group-hover:border-[#4a5a7a]/60">
+                        <FaGear size={13} />
+                      </span>
+                      <span className="flex-1 text-left">
+                        <span className="block text-sm font-semibold text-[#dce6ff]">
+                          Settings
+                        </span>
+                        <span className="block text-[0.68rem] text-[#617393]">
+                          Notifications &amp; preferences
+                        </span>
+                      </span>
+                      <FaChevronRight
+                        size={11}
+                        className="text-[#3e5070] transition-transform group-hover:translate-x-0.5"
+                      />
+                    </button>
+                  </div>
+
+                  <div className="border-t border-[#1a2840] p-2">
+                    <button
+                      onClick={handleLogout}
+                      className="group w-full flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all hover:bg-[rgba(255,90,90,0.08)]"
+                    >
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-[#3a1c1c] bg-[rgba(255,100,100,0.08)] text-[#ff6b6b] transition-colors group-hover:border-[#ff6b6b]/40">
+                        <FaRightFromBracket size={13} />
+                      </span>
+                      <span className="flex-1 text-left">
+                        <span className="block text-sm font-semibold text-[#ffaaaa]">
+                          Log Out
+                        </span>
+                        <span className="block text-[0.68rem] text-[#7a4a4a]">
+                          End your session
+                        </span>
+                      </span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -1195,8 +1713,70 @@ const NavBar = ({
                 </div>
               </div>
             )}
+
+            <div className="mt-4 rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] p-4 shadow-[0_16px_36px_rgba(2,8,20,0.35)]">
+              <p className="text-xs font-extrabold uppercase tracking-[0.24em] text-[#ff8f6a]">
+                {currentUser ? "Your Account" : "Account"}
+              </p>
+              <p className="mt-1 text-sm font-semibold text-[#c8d3eb]">
+                {currentUser
+                  ? `${currentUser.fullName} is signed in`
+                  : "Secure access for orders and saved details"}
+              </p>
+
+              {currentUser ? (
+                <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <button
+                    onClick={() => handleMenuLinkClick("Home", true)}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-[rgba(99,230,190,0.24)] bg-[rgba(99,230,190,0.08)] px-3 py-2.5 text-sm font-bold text-[#63e6be] transition-all hover:border-[#63e6be] hover:bg-[rgba(99,230,190,0.14)]"
+                  >
+                    <FaUser size={13} />
+                    Go Home
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-[rgba(255,143,106,0.24)] bg-[rgba(255,143,106,0.08)] px-3 py-2.5 text-sm font-bold text-[#ffb08e] transition-all hover:border-[#ff8f6a] hover:bg-[rgba(255,143,106,0.14)]"
+                  >
+                    <FaRightFromBracket size={13} />
+                    Log Out
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  <button
+                    onClick={() => openAuthModal("login")}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-[rgba(99,230,190,0.24)] bg-[rgba(99,230,190,0.08)] px-3 py-2.5 text-sm font-bold text-[#63e6be] transition-all hover:border-[#63e6be] hover:bg-[rgba(99,230,190,0.14)]"
+                  >
+                    <FaArrowRightToBracket size={13} />
+                    Log In
+                  </button>
+                  <button
+                    onClick={() => openAuthModal("signup")}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-[rgba(255,143,106,0.24)] bg-[rgba(255,143,106,0.08)] px-3 py-2.5 text-sm font-bold text-[#ffb08e] transition-all hover:border-[#ff8f6a] hover:bg-[rgba(255,143,106,0.14)]"
+                  >
+                    <FaUserPlus size={13} />
+                    Sign Up
+                  </button>
+                  <button
+                    onClick={() => openAuthModal("forgot")}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-[rgba(255,209,102,0.24)] bg-[rgba(255,209,102,0.08)] px-3 py-2.5 text-sm font-bold text-[#ffd166] transition-all hover:border-[#ffd166] hover:bg-[rgba(255,209,102,0.14)]"
+                  >
+                    <FaKey size={13} />
+                    Forgot
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+      )}
+
+      {authModalMode && (
+        <AuthModal
+          mode={authModalMode}
+          onLoginSuccess={handleLoginSuccess}
+          onClose={() => setAuthModalMode(null)}
+        />
       )}
 
       {searchDetailsMeal && (
@@ -1219,6 +1799,1046 @@ const NavBar = ({
           onAddToCart={onAddToCart}
         />
       )}
+
+      {/* ── Security Panel ──────────────────────────────────── */}
+      {securityOpen &&
+        currentUser &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-9999 flex items-start justify-end bg-[rgba(2,8,20,0.75)] backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => {
+              if (
+                e.target === e.currentTarget &&
+                !isSavingSecurity &&
+                !showDeleteConfirm
+              )
+                setSecurityOpen(false);
+            }}
+          >
+            <div className="relative flex h-full w-full max-w-md flex-col bg-[linear-gradient(170deg,rgba(14,22,42,0.99),rgba(9,14,28,0.99))] shadow-[0_0_80px_rgba(2,8,20,0.8)] animate-[slideInRight_0.28s_cubic-bezier(0.22,1,0.36,1)]">
+              <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(99,170,255,0.15)_0%,transparent_70%)] blur-3xl" />
+              <div className="pointer-events-none absolute -left-12 bottom-24 h-44 w-44 rounded-full bg-[radial-gradient(circle,rgba(255,100,100,0.08)_0%,transparent_70%)] blur-3xl" />
+
+              {/* Header */}
+              <div className="relative z-10 flex shrink-0 items-center justify-between border-b border-[#1a2840] px-5 py-4 sm:px-6">
+                <div className="flex items-center gap-3">
+                  <span className="grid h-9 w-9 place-items-center rounded-xl bg-[rgba(148,163,255,0.1)] text-[#94a3ff]">
+                    <FaShield size={16} />
+                  </span>
+                  <div>
+                    <h2 className="text-base font-bold text-[#eef2ff]">
+                      Security
+                    </h2>
+                    <p className="text-[0.68rem] text-[#617393]">
+                      Password &amp; account safety
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => !isSavingSecurity && setSecurityOpen(false)}
+                  className="grid h-8 w-8 place-items-center rounded-lg border border-[#1c2b43] text-[#617393] transition hover:border-[#3e5070] hover:text-[#dce6ff]"
+                  aria-label="Close security"
+                >
+                  <FaXmark size={15} />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="relative z-10 flex-1 overflow-y-auto px-5 py-5 sm:px-6 space-y-6">
+                {/* Change Password */}
+                <section>
+                  <div className="mb-4 flex items-center gap-2">
+                    <FaLock size={12} className="text-[#94a3ff]" />
+                    <h3 className="text-sm font-bold text-[#c8d3eb] uppercase tracking-wider">
+                      Change Password
+                    </h3>
+                  </div>
+
+                  {securitySuccess && (
+                    <div className="mb-4 flex items-center gap-2.5 rounded-xl bg-[rgba(99,230,190,0.08)] border border-[#63e6be]/20 px-3.5 py-2.5">
+                      <FaCircleCheck
+                        size={13}
+                        className="shrink-0 text-[#63e6be]"
+                      />
+                      <p className="text-xs font-semibold text-[#63e6be]">
+                        {securitySuccess}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="space-y-3">
+                    {/* Current password */}
+                    <div>
+                      <label className="mb-1.5 block text-[0.7rem] font-semibold uppercase tracking-wider text-[#617393]">
+                        Current Password
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showSecPw.current ? "text" : "password"}
+                          value={securityForm.currentPassword}
+                          onChange={(e) => {
+                            setSecurityForm((p) => ({
+                              ...p,
+                              currentPassword: e.target.value,
+                            }));
+                            setSecurityErrors((p) => ({
+                              ...p,
+                              currentPassword: undefined,
+                            }));
+                            setSecuritySuccess("");
+                          }}
+                          placeholder="Enter current password"
+                          className={`w-full rounded-xl border bg-[rgba(255,255,255,0.04)] px-3.5 py-2.5 pr-10 text-sm text-[#dce6ff] placeholder-[#3e5070] outline-none transition focus:ring-1 ${securityErrors.currentPassword ? "border-[#ff7f7f] focus:border-[#ff7f7f] focus:ring-[#ff7f7f]/20" : "border-[#1c2b43] focus:border-[#94a3ff] focus:ring-[#94a3ff]/15"}`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowSecPw((p) => ({ ...p, current: !p.current }))
+                          }
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#3e5070] hover:text-[#9ba5be]"
+                        >
+                          {showSecPw.current ? (
+                            <FaEyeSlash size={14} />
+                          ) : (
+                            <FaEye size={14} />
+                          )}
+                        </button>
+                      </div>
+                      {securityErrors.currentPassword && (
+                        <p className="mt-1 text-[0.68rem] text-[#ff8f8f]">
+                          {securityErrors.currentPassword}
+                        </p>
+                      )}
+                    </div>
+                    {/* New password */}
+                    <div>
+                      <label className="mb-1.5 block text-[0.7rem] font-semibold uppercase tracking-wider text-[#617393]">
+                        New Password
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showSecPw.next ? "text" : "password"}
+                          value={securityForm.newPassword}
+                          onChange={(e) => {
+                            setSecurityForm((p) => ({
+                              ...p,
+                              newPassword: e.target.value,
+                            }));
+                            setSecurityErrors((p) => ({
+                              ...p,
+                              newPassword: undefined,
+                            }));
+                          }}
+                          placeholder="Min. 6 characters"
+                          className={`w-full rounded-xl border bg-[rgba(255,255,255,0.04)] px-3.5 py-2.5 pr-10 text-sm text-[#dce6ff] placeholder-[#3e5070] outline-none transition focus:ring-1 ${securityErrors.newPassword ? "border-[#ff7f7f] focus:border-[#ff7f7f] focus:ring-[#ff7f7f]/20" : "border-[#1c2b43] focus:border-[#94a3ff] focus:ring-[#94a3ff]/15"}`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowSecPw((p) => ({ ...p, next: !p.next }))
+                          }
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#3e5070] hover:text-[#9ba5be]"
+                        >
+                          {showSecPw.next ? (
+                            <FaEyeSlash size={14} />
+                          ) : (
+                            <FaEye size={14} />
+                          )}
+                        </button>
+                      </div>
+                      {securityErrors.newPassword && (
+                        <p className="mt-1 text-[0.68rem] text-[#ff8f8f]">
+                          {securityErrors.newPassword}
+                        </p>
+                      )}
+                    </div>
+                    {/* Confirm password */}
+                    <div>
+                      <label className="mb-1.5 block text-[0.7rem] font-semibold uppercase tracking-wider text-[#617393]">
+                        Confirm New Password
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showSecPw.confirm ? "text" : "password"}
+                          value={securityForm.confirmPassword}
+                          onChange={(e) => {
+                            setSecurityForm((p) => ({
+                              ...p,
+                              confirmPassword: e.target.value,
+                            }));
+                            setSecurityErrors((p) => ({
+                              ...p,
+                              confirmPassword: undefined,
+                            }));
+                          }}
+                          placeholder="Repeat new password"
+                          className={`w-full rounded-xl border bg-[rgba(255,255,255,0.04)] px-3.5 py-2.5 pr-10 text-sm text-[#dce6ff] placeholder-[#3e5070] outline-none transition focus:ring-1 ${securityErrors.confirmPassword ? "border-[#ff7f7f] focus:border-[#ff7f7f] focus:ring-[#ff7f7f]/20" : "border-[#1c2b43] focus:border-[#94a3ff] focus:ring-[#94a3ff]/15"}`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowSecPw((p) => ({ ...p, confirm: !p.confirm }))
+                          }
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#3e5070] hover:text-[#9ba5be]"
+                        >
+                          {showSecPw.confirm ? (
+                            <FaEyeSlash size={14} />
+                          ) : (
+                            <FaEye size={14} />
+                          )}
+                        </button>
+                      </div>
+                      {securityErrors.confirmPassword && (
+                        <p className="mt-1 text-[0.68rem] text-[#ff8f8f]">
+                          {securityErrors.confirmPassword}
+                        </p>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={handleChangePassword}
+                      disabled={isSavingSecurity}
+                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,rgba(148,163,255,0.9),rgba(99,120,255,0.9))] py-2.5 text-sm font-black text-white shadow-[0_8px_20px_rgba(148,163,255,0.2)] transition hover:brightness-110 disabled:opacity-75 disabled:cursor-not-allowed"
+                    >
+                      {isSavingSecurity ? (
+                        <>
+                          <FaSpinner size={13} className="animate-spin" />{" "}
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <FaLock size={12} /> Update Password
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </section>
+
+                <div className="border-t border-[#1a2840]" />
+
+                {/* Active Session Info */}
+                <section>
+                  <div className="mb-3 flex items-center gap-2">
+                    <FaKey size={12} className="text-[#ffd166]" />
+                    <h3 className="text-sm font-bold text-[#c8d3eb] uppercase tracking-wider">
+                      Active Session
+                    </h3>
+                  </div>
+                  <div className="rounded-xl border border-[#192840] bg-[rgba(255,255,255,0.025)] px-4 py-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-[#617393]">
+                        Signed in as
+                      </span>
+                      <span className="text-xs font-semibold text-[#c8d3eb]">
+                        {currentUser.email}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-[#617393]">
+                        Session type
+                      </span>
+                      <span className="text-xs font-semibold text-[#63e6be]">
+                        {window.localStorage.getItem("e-vendoza-auth-session")
+                          ? "Persistent (Remember me)"
+                          : "Temporary"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-[#617393]">Status</span>
+                      <span className="flex items-center gap-1.5 text-xs font-semibold text-[#4ade80]">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#4ade80]" />{" "}
+                        Active
+                      </span>
+                    </div>
+                  </div>
+                </section>
+
+                <div className="border-t border-[#1a2840]" />
+
+                {/* Danger Zone */}
+                <section>
+                  <div className="mb-3 flex items-center gap-2">
+                    <FaCircleExclamation size={12} className="text-[#ff6b6b]" />
+                    <h3 className="text-sm font-bold text-[#ff9a9a] uppercase tracking-wider">
+                      Danger Zone
+                    </h3>
+                  </div>
+                  {!showDeleteConfirm ? (
+                    <button
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="group flex w-full items-center gap-2.5 rounded-xl border border-[#3a1c1c] bg-[rgba(255,80,80,0.05)] px-4 py-3 text-sm font-semibold text-[#ff7070] transition hover:bg-[rgba(255,80,80,0.1)] hover:border-[#ff6b6b]/40"
+                    >
+                      <FaUserMinus size={13} className="shrink-0" />
+                      <span className="flex-1 text-left">Delete Account</span>
+                      <span className="text-[0.65rem] text-[#7a4a4a]">
+                        Permanent
+                      </span>
+                    </button>
+                  ) : (
+                    <div className="rounded-xl border border-[#ff6b6b]/30 bg-[rgba(255,80,80,0.07)] p-4 space-y-3">
+                      <p className="text-sm font-semibold text-[#ff9a9a]">
+                        Are you sure?
+                      </p>
+                      <p className="text-xs text-[#a05050]">
+                        This will permanently delete your account, profile data,
+                        and order history. This cannot be undone.
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setShowDeleteConfirm(false)}
+                          className="flex-1 rounded-xl border border-[#1c2b43] py-2 text-xs font-semibold text-[#617393] transition hover:text-[#dce6ff]"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleDeleteAccount}
+                          className="flex-1 rounded-xl bg-[rgba(255,60,60,0.8)] py-2 text-xs font-black text-white transition hover:bg-[rgba(255,60,60,1)]"
+                        >
+                          Yes, Delete
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </section>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {/* ── Settings Panel ──────────────────────────────────── */}
+      {settingsOpen &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-9999 flex items-start justify-end bg-[rgba(2,8,20,0.75)] backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setSettingsOpen(false);
+            }}
+          >
+            <div className="relative flex h-full w-full max-w-md flex-col bg-[linear-gradient(170deg,rgba(14,22,42,0.99),rgba(9,14,28,0.99))] shadow-[0_0_80px_rgba(2,8,20,0.8)] animate-[slideInRight_0.28s_cubic-bezier(0.22,1,0.36,1)]">
+              <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(255,143,106,0.12)_0%,transparent_70%)] blur-3xl" />
+              <div className="pointer-events-none absolute -left-12 bottom-24 h-44 w-44 rounded-full bg-[radial-gradient(circle,rgba(99,230,190,0.08)_0%,transparent_70%)] blur-3xl" />
+
+              {/* Header */}
+              <div className="relative z-10 flex shrink-0 items-center justify-between border-b border-[#1a2840] px-5 py-4 sm:px-6">
+                <div className="flex items-center gap-3">
+                  <span className="grid h-9 w-9 place-items-center rounded-xl bg-[rgba(255,143,106,0.1)] text-[#ff8f6a]">
+                    <FaGear size={16} />
+                  </span>
+                  <div>
+                    <h2 className="text-base font-bold text-[#eef2ff]">
+                      Settings
+                    </h2>
+                    <p className="text-[0.68rem] text-[#617393]">
+                      Notifications &amp; preferences
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSettingsOpen(false)}
+                  className="grid h-8 w-8 place-items-center rounded-lg border border-[#1c2b43] text-[#617393] transition hover:border-[#3e5070] hover:text-[#dce6ff]"
+                  aria-label="Close settings"
+                >
+                  <FaXmark size={15} />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="relative z-10 flex-1 overflow-y-auto px-5 py-5 sm:px-6 space-y-6">
+                {/* Notifications */}
+                <section>
+                  <div className="mb-4 flex items-center gap-2">
+                    <FaBell size={12} className="text-[#ffd166]" />
+                    <h3 className="text-sm font-bold text-[#c8d3eb] uppercase tracking-wider">
+                      Notifications
+                    </h3>
+                  </div>
+                  <div className="space-y-1">
+                    {[
+                      {
+                        key: "orderNotify",
+                        label: "Order updates",
+                        desc: "Confirmations and status changes",
+                      },
+                      {
+                        key: "promoNotify",
+                        label: "Promotions & offers",
+                        desc: "Deals, discounts and special menus",
+                      },
+                    ].map(({ key, label, desc }) => (
+                      <button
+                        key={key}
+                        onClick={() => saveSetting(key, !settings[key])}
+                        className="flex w-full items-center gap-3 rounded-xl border border-[#192840] bg-[rgba(255,255,255,0.02)] px-4 py-3 text-left transition hover:bg-[rgba(255,255,255,0.04)]"
+                      >
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-[#c8d3eb]">
+                            {label}
+                          </p>
+                          <p className="text-[0.68rem] text-[#617393]">
+                            {desc}
+                          </p>
+                        </div>
+                        {settings[key] ? (
+                          <FaToggleOn
+                            size={22}
+                            className="shrink-0 text-[#63e6be]"
+                          />
+                        ) : (
+                          <FaToggleOff
+                            size={22}
+                            className="shrink-0 text-[#3e5070]"
+                          />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                <div className="border-t border-[#1a2840]" />
+
+                {/* App Preferences */}
+                <section>
+                  <div className="mb-4 flex items-center gap-2">
+                    <FaGear size={12} className="text-[#ff8f6a]" />
+                    <h3 className="text-sm font-bold text-[#c8d3eb] uppercase tracking-wider">
+                      App Preferences
+                    </h3>
+                  </div>
+                  <div className="space-y-1">
+                    {[
+                      {
+                        key: "soundFx",
+                        label: "Sound effects",
+                        desc: "Play sounds on cart & order actions",
+                      },
+                      {
+                        key: "compactCart",
+                        label: "Compact cart view",
+                        desc: "Show smaller item rows in the cart",
+                      },
+                    ].map(({ key, label, desc }) => (
+                      <button
+                        key={key}
+                        onClick={() => saveSetting(key, !settings[key])}
+                        className="flex w-full items-center gap-3 rounded-xl border border-[#192840] bg-[rgba(255,255,255,0.02)] px-4 py-3 text-left transition hover:bg-[rgba(255,255,255,0.04)]"
+                      >
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-[#c8d3eb]">
+                            {label}
+                          </p>
+                          <p className="text-[0.68rem] text-[#617393]">
+                            {desc}
+                          </p>
+                        </div>
+                        {settings[key] ? (
+                          <FaToggleOn
+                            size={22}
+                            className="shrink-0 text-[#63e6be]"
+                          />
+                        ) : (
+                          <FaToggleOff
+                            size={22}
+                            className="shrink-0 text-[#3e5070]"
+                          />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                <div className="border-t border-[#1a2840]" />
+
+                {/* Data Management */}
+                <section>
+                  <div className="mb-4 flex items-center gap-2">
+                    <FaDatabase size={11} className="text-[#9ba5be]" />
+                    <h3 className="text-sm font-bold text-[#c8d3eb] uppercase tracking-wider">
+                      Data Management
+                    </h3>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between rounded-xl border border-[#192840] bg-[rgba(255,255,255,0.02)] px-4 py-3">
+                      <div>
+                        <p className="text-sm font-semibold text-[#c8d3eb]">
+                          Cart
+                        </p>
+                        <p className="text-[0.68rem] text-[#617393]">
+                          {addToCartItems.length} item
+                          {addToCartItems.length !== 1 ? "s" : ""} saved
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          onClearCart?.();
+                          toast.info("Cart cleared");
+                        }}
+                        disabled={addToCartItems.length === 0}
+                        className="rounded-lg border border-[#3a1c1c] bg-[rgba(255,80,80,0.06)] px-3 py-1.5 text-xs font-semibold text-[#ff7070] transition hover:bg-[rgba(255,80,80,0.12)] disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between rounded-xl border border-[#192840] bg-[rgba(255,255,255,0.02)] px-4 py-3">
+                      <div>
+                        <p className="text-sm font-semibold text-[#c8d3eb]">
+                          Favourites
+                        </p>
+                        <p className="text-[0.68rem] text-[#617393]">
+                          {favoriteItems.length} item
+                          {favoriteItems.length !== 1 ? "s" : ""} saved
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          onClearFavorites?.();
+                          toast.info("Favourites cleared");
+                        }}
+                        disabled={favoriteItems.length === 0}
+                        className="rounded-lg border border-[#3a1c1c] bg-[rgba(255,80,80,0.06)] px-3 py-1.5 text-xs font-semibold text-[#ff7070] transition hover:bg-[rgba(255,80,80,0.12)] disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between rounded-xl border border-[#192840] bg-[rgba(255,255,255,0.02)] px-4 py-3">
+                      <div>
+                        <p className="text-sm font-semibold text-[#c8d3eb]">
+                          Order History
+                        </p>
+                        <p className="text-[0.68rem] text-[#617393]">
+                          {orderHistory.length} order
+                          {orderHistory.length !== 1 ? "s" : ""} stored
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setOrderHistory([]);
+                          window.localStorage.removeItem(
+                            "e-vendoza-order-history",
+                          );
+                          toast.info("Order history cleared");
+                        }}
+                        disabled={orderHistory.length === 0}
+                        className="rounded-lg border border-[#3a1c1c] bg-[rgba(255,80,80,0.06)] px-3 py-1.5 text-xs font-semibold text-[#ff7070] transition hover:bg-[rgba(255,80,80,0.12)] disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {/* ── My Profile Panel ────────────────────────────────── */}
+      {myProfileOpen &&
+        currentUser &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-9999 flex items-start justify-end bg-[rgba(2,8,20,0.75)] backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => {
+              if (e.target === e.currentTarget && !isSavingProfile)
+                setMyProfileOpen(false);
+            }}
+          >
+            <div className="relative flex h-full w-full max-w-md flex-col bg-[linear-gradient(170deg,rgba(14,22,42,0.99),rgba(9,14,28,0.99))] shadow-[0_0_80px_rgba(2,8,20,0.8)] animate-[slideInRight_0.28s_cubic-bezier(0.22,1,0.36,1)]">
+              {/* Glow accents */}
+              <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(99,230,190,0.18)_0%,transparent_70%)] blur-3xl" />
+              <div className="pointer-events-none absolute -left-12 bottom-24 h-44 w-44 rounded-full bg-[radial-gradient(circle,rgba(255,143,106,0.1)_0%,transparent_70%)] blur-3xl" />
+
+              {/* Header */}
+              <div className="relative z-10 flex shrink-0 items-center justify-between border-b border-[#1a2840] px-5 py-4 sm:px-6">
+                <div className="flex items-center gap-3">
+                  <span className="grid h-9 w-9 place-items-center rounded-xl bg-[rgba(99,230,190,0.12)] text-[#63e6be]">
+                    <FaUser size={16} />
+                  </span>
+                  <div>
+                    <h2 className="text-base font-bold text-[#eef2ff]">
+                      My Profile
+                    </h2>
+                    <p className="text-[0.68rem] text-[#617393]">
+                      {isEditingProfile
+                        ? "Edit your information"
+                        : "Account details"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {!isEditingProfile && (
+                    <button
+                      onClick={() => setIsEditingProfile(true)}
+                      className="flex items-center gap-1.5 rounded-lg border border-[#223252] bg-[rgba(99,230,190,0.08)] px-3 py-1.5 text-xs font-semibold text-[#63e6be] transition hover:border-[#63e6be]/40 hover:bg-[rgba(99,230,190,0.14)]"
+                    >
+                      <FaPencil size={10} />
+                      Edit
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      if (!isSavingProfile) {
+                        setIsEditingProfile(false);
+                        setProfileErrors({});
+                        setMyProfileOpen(false);
+                      }
+                    }}
+                    className="grid h-8 w-8 place-items-center rounded-lg border border-[#1c2b43] text-[#617393] transition hover:border-[#3e5070] hover:text-[#dce6ff]"
+                    aria-label="Close profile"
+                  >
+                    <FaXmark size={15} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className="relative z-10 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+                {/* Avatar + account status block */}
+                <div className="mb-6 rounded-2xl border border-[#1a2c47] bg-[linear-gradient(145deg,rgba(15,25,46,0.84),rgba(8,14,28,0.84))] p-4 shadow-[0_12px_30px_rgba(2,8,20,0.35)]">
+                  <div className="flex items-center gap-3">
+                    <div className="relative shrink-0">
+                      <div className="grid h-18 w-18 place-items-center rounded-full border-2 border-[#1c3050] bg-[linear-gradient(135deg,rgba(99,230,190,0.25),rgba(255,143,106,0.2))] text-2xl font-black text-[#63e6be] shadow-[0_0_30px_rgba(99,230,190,0.2)]">
+                        {currentUser.fullName.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="absolute bottom-0.5 right-0.5 h-4 w-4 rounded-full border-2 border-[#0d1a2e] bg-[#4ade80]" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-base font-bold text-[#eef2ff]">
+                        {currentUser.fullName}
+                      </p>
+                      <p className="truncate text-xs text-[#617393]">
+                        {currentUser.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-[1fr_auto] sm:items-center">
+                    <div className="flex items-center gap-2 rounded-xl border border-[#63e6be]/30 bg-[rgba(99,230,190,0.08)] px-3 py-2">
+                      <span className="h-2 w-2 rounded-full bg-[#63e6be] animate-pulse" />
+                      <span className="text-[0.68rem] font-bold uppercase tracking-[0.16em] text-[#63e6be]">
+                        Active Session
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 rounded-xl border border-[#ffd166]/25 bg-[rgba(255,209,102,0.08)] px-3 py-2">
+                      <span className="grid h-5 w-5 place-items-center rounded-full bg-[rgba(255,209,102,0.15)] text-[#ffd166]">
+                        <FaCircleCheck size={10} />
+                      </span>
+                      <div>
+                        <p className="text-[0.62rem] font-bold uppercase tracking-[0.12em] text-[#ffd166]">
+                          Account Status
+                        </p>
+                        <p className="text-[0.7rem] font-semibold text-[#f4d88b]">
+                          Active Member
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Info / Edit fields */}
+                <div className="space-y-4">
+                  {/* Full Name */}
+                  <div>
+                    <label className="mb-1.5 flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-[#617393]">
+                      <FaUser size={9} /> Full Name
+                    </label>
+                    {isEditingProfile ? (
+                      <input
+                        type="text"
+                        value={profileForm.fullName}
+                        onChange={(e) => {
+                          setProfileForm((p) => ({
+                            ...p,
+                            fullName: e.target.value,
+                          }));
+                          if (profileErrors.fullName)
+                            setProfileErrors((p) => ({
+                              ...p,
+                              fullName: undefined,
+                            }));
+                        }}
+                        maxLength={60}
+                        placeholder="Your full name"
+                        className={`w-full rounded-xl border bg-[rgba(255,255,255,0.04)] px-3.5 py-2.5 text-sm text-[#dce6ff] placeholder-[#3e5070] outline-none transition focus:ring-1 ${profileErrors.fullName ? "border-[#ff7f7f] focus:border-[#ff7f7f] focus:ring-[#ff7f7f]/20" : "border-[#1c2b43] focus:border-[#63e6be] focus:ring-[#63e6be]/15"}`}
+                      />
+                    ) : (
+                      <div className="rounded-xl border border-[#192840] bg-[rgba(255,255,255,0.025)] px-3.5 py-2.5 text-sm text-[#c8d3eb]">
+                        {currentUser.fullName}
+                      </div>
+                    )}
+                    {profileErrors.fullName && (
+                      <p className="mt-1 text-[0.68rem] text-[#ff8f8f]">
+                        {profileErrors.fullName}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Email — always read-only */}
+                  <div>
+                    <label className="mb-1.5 flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-[#617393]">
+                      <FaEnvelope size={9} /> Email Address
+                    </label>
+                    <div className="flex items-center gap-2 rounded-xl border border-[#192840] bg-[rgba(255,255,255,0.025)] px-3.5 py-2.5">
+                      <span className="flex-1 text-sm text-[#c8d3eb]">
+                        {currentUser.email}
+                      </span>
+                      <span className="shrink-0 rounded-full bg-[rgba(255,209,102,0.1)] px-2 py-0.5 text-[0.6rem] font-semibold text-[#ffd166] border border-[#ffd166]/20">
+                        Verified
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Phone */}
+                  <div>
+                    <label className="mb-1.5 flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-[#617393]">
+                      <FaPhone size={9} /> Phone Number
+                    </label>
+                    {isEditingProfile ? (
+                      <input
+                        type="tel"
+                        value={profileForm.phone}
+                        onChange={(e) => {
+                          setProfileForm((p) => ({
+                            ...p,
+                            phone: e.target.value,
+                          }));
+                          if (profileErrors.phone)
+                            setProfileErrors((p) => ({
+                              ...p,
+                              phone: undefined,
+                            }));
+                        }}
+                        maxLength={20}
+                        placeholder="e.g. +880 1700 000000"
+                        className={`w-full rounded-xl border bg-[rgba(255,255,255,0.04)] px-3.5 py-2.5 text-sm text-[#dce6ff] placeholder-[#3e5070] outline-none transition focus:ring-1 ${profileErrors.phone ? "border-[#ff7f7f] focus:border-[#ff7f7f] focus:ring-[#ff7f7f]/20" : "border-[#1c2b43] focus:border-[#63e6be] focus:ring-[#63e6be]/15"}`}
+                      />
+                    ) : (
+                      <div className="rounded-xl border border-[#192840] bg-[rgba(255,255,255,0.025)] px-3.5 py-2.5 text-sm text-[#c8d3eb]">
+                        {profileForm.phone || (
+                          <span className="text-[#3e5070]">Not set</span>
+                        )}
+                      </div>
+                    )}
+                    {profileErrors.phone && (
+                      <p className="mt-1 text-[0.68rem] text-[#ff8f8f]">
+                        {profileErrors.phone}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Location */}
+                  <div>
+                    <label className="mb-1.5 flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-[#617393]">
+                      <FaLocationDot size={9} /> Location
+                    </label>
+                    {isEditingProfile ? (
+                      <input
+                        type="text"
+                        value={profileForm.location}
+                        onChange={(e) =>
+                          setProfileForm((p) => ({
+                            ...p,
+                            location: e.target.value,
+                          }))
+                        }
+                        maxLength={80}
+                        placeholder="e.g. Dhaka, Bangladesh"
+                        className="w-full rounded-xl border border-[#1c2b43] bg-[rgba(255,255,255,0.04)] px-3.5 py-2.5 text-sm text-[#dce6ff] placeholder-[#3e5070] outline-none transition focus:border-[#63e6be] focus:ring-1 focus:ring-[#63e6be]/15"
+                      />
+                    ) : (
+                      <div className="rounded-xl border border-[#192840] bg-[rgba(255,255,255,0.025)] px-3.5 py-2.5 text-sm text-[#c8d3eb]">
+                        {profileForm.location || (
+                          <span className="text-[#3e5070]">Not set</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Bio */}
+                  <div>
+                    <label className="mb-1.5 flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-[#617393]">
+                      <FaPencil size={9} /> About Me
+                    </label>
+                    {isEditingProfile ? (
+                      <textarea
+                        value={profileForm.bio}
+                        onChange={(e) =>
+                          setProfileForm((p) => ({ ...p, bio: e.target.value }))
+                        }
+                        maxLength={160}
+                        rows={3}
+                        placeholder="A short bio about yourself..."
+                        className="w-full resize-none rounded-xl border border-[#1c2b43] bg-[rgba(255,255,255,0.04)] px-3.5 py-2.5 text-sm text-[#dce6ff] placeholder-[#3e5070] outline-none transition focus:border-[#63e6be] focus:ring-1 focus:ring-[#63e6be]/15"
+                      />
+                    ) : (
+                      <div className="min-h-18 rounded-xl border border-[#192840] bg-[rgba(255,255,255,0.025)] px-3.5 py-2.5 text-sm text-[#c8d3eb]">
+                        {profileForm.bio || (
+                          <span className="text-[#3e5070]">
+                            No bio yet. Click Edit to add one.
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Activity summary */}
+                  <div className="flex items-center gap-3 rounded-xl border border-[#192840] bg-[rgba(255,255,255,0.02)] px-4 py-3">
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[rgba(99,230,190,0.08)] text-[#63e6be]">
+                      <FaCircleCheck size={13} />
+                    </span>
+                    <div>
+                      <p className="text-xs font-semibold text-[#c8d3eb]">
+                        Profile Activity
+                      </p>
+                      <p className="text-[0.68rem] text-[#617393]">
+                        Orders and saved favourites
+                      </p>
+                    </div>
+                    <div className="ml-auto text-right">
+                      <p className="text-xs font-semibold text-[#c8d3eb]">
+                        {orderHistory.length} Orders
+                      </p>
+                      <p className="text-[0.68rem] text-[#617393]">
+                        {favoriteItems.length} Favourites
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer — Save / Cancel */}
+              {isEditingProfile && (
+                <div className="relative z-10 shrink-0 border-t border-[#1a2840] px-5 py-3 sm:px-6">
+                  <div className="flex gap-2.5">
+                    <button
+                      onClick={() => {
+                        setIsEditingProfile(false);
+                        setProfileErrors({});
+                        // Reset form to saved values
+                        const extra = loadExtendedProfile(currentUser.email);
+                        setProfileForm({
+                          fullName: currentUser.fullName,
+                          phone: extra.phone ?? "",
+                          location: extra.location ?? "",
+                          bio: extra.bio ?? "",
+                        });
+                      }}
+                      disabled={isSavingProfile}
+                      className="flex-1 rounded-xl border border-[#1c2b43] py-2.5 text-sm font-semibold text-[#617393] transition hover:border-[#3e5070] hover:text-[#dce6ff] disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSaveProfile}
+                      disabled={isSavingProfile}
+                      className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] py-2.5 text-sm font-black text-[#071510] shadow-[0_8px_20px_rgba(99,230,190,0.3)] transition hover:brightness-110 disabled:opacity-75 disabled:cursor-not-allowed"
+                    >
+                      {isSavingProfile ? (
+                        <>
+                          <FaSpinner size={13} className="animate-spin" />{" "}
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <FaCheck size={13} /> Save Changes
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {/* ── Order History Panel ────────────────────────────── */}
+      {orderHistoryOpen &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-9999 flex items-start justify-end bg-[rgba(2,8,20,0.75)] backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setOrderHistoryOpen(false);
+            }}
+          >
+            {/* Slide-in drawer */}
+            <div className="relative flex h-full w-full max-w-md flex-col bg-[linear-gradient(170deg,rgba(14,22,42,0.99),rgba(9,14,28,0.99))] shadow-[0_0_80px_rgba(2,8,20,0.8)] animate-[slideInRight_0.28s_cubic-bezier(0.22,1,0.36,1)]">
+              {/* Glow accents */}
+              <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(255,209,102,0.18)_0%,transparent_70%)] blur-3xl" />
+              <div className="pointer-events-none absolute -left-12 bottom-20 h-44 w-44 rounded-full bg-[radial-gradient(circle,rgba(99,230,190,0.1)_0%,transparent_70%)] blur-3xl" />
+
+              {/* Header */}
+              <div className="relative z-10 flex shrink-0 items-center justify-between border-b border-[#1a2840] px-5 py-4 sm:px-6">
+                <div className="flex items-center gap-3">
+                  <span className="grid h-9 w-9 place-items-center rounded-xl bg-[rgba(255,209,102,0.12)] text-[#ffd166]">
+                    <FaClockRotateLeft size={16} />
+                  </span>
+                  <div>
+                    <h2 className="text-base font-bold text-[#eef2ff]">
+                      Order History
+                    </h2>
+                    <p className="text-[0.68rem] text-[#617393]">
+                      {orderHistory.length} order
+                      {orderHistory.length !== 1 ? "s" : ""} placed
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setOrderHistoryOpen(false)}
+                  className="grid h-8 w-8 place-items-center rounded-lg border border-[#1c2b43] text-[#617393] transition hover:border-[#3e5070] hover:text-[#dce6ff]"
+                  aria-label="Close order history"
+                >
+                  <FaXmark size={15} />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="relative z-10 flex-1 overflow-y-auto px-4 py-4 sm:px-5 space-y-3">
+                {orderHistory.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <div className="mb-4 grid h-16 w-16 place-items-center rounded-2xl border border-[#1c2b43] bg-[rgba(255,209,102,0.07)] text-[#ffd166]">
+                      <FaClockRotateLeft size={26} />
+                    </div>
+                    <p className="text-sm font-semibold text-[#c8d3eb]">
+                      No orders yet
+                    </p>
+                    <p className="mt-1 text-xs text-[#617393]">
+                      Your completed orders will appear here.
+                    </p>
+                  </div>
+                ) : (
+                  orderHistory.map((order) => {
+                    const orderDate = new Date(order.date);
+                    const dateStr = orderDate.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    });
+                    const timeStr = orderDate.toLocaleTimeString("en-US", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    });
+                    return (
+                      <div
+                        key={order.id}
+                        className="rounded-2xl border border-[#192840] bg-[rgba(255,255,255,0.025)] p-4 transition hover:border-[#253a58] hover:bg-[rgba(255,255,255,0.04)]"
+                      >
+                        {/* Order meta row */}
+                        <div className="mb-3 flex items-start justify-between gap-2">
+                          <div>
+                            <span className="text-[0.7rem] font-bold uppercase tracking-widest text-[#ffd166]">
+                              Order #{order.id}
+                            </span>
+                            <p className="mt-0.5 text-[0.68rem] text-[#617393]">
+                              {dateStr} · {timeStr}
+                            </p>
+                          </div>
+                          <span className="shrink-0 rounded-full bg-[rgba(99,230,190,0.1)] px-2.5 py-0.5 text-[0.65rem] font-semibold text-[#63e6be] border border-[#63e6be]/20">
+                            {order.status}
+                          </span>
+                        </div>
+
+                        {/* Items */}
+                        <div className="mb-3 space-y-2">
+                          {order.items.map((item, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center gap-2.5"
+                            >
+                              {item.image ? (
+                                <img
+                                  src={item.image}
+                                  alt={item.name}
+                                  className="h-9 w-9 shrink-0 rounded-lg object-cover border border-[#1c2b43]"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = "none";
+                                  }}
+                                />
+                              ) : (
+                                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[rgba(255,209,102,0.08)] text-[#ffd166] border border-[#1c2b43]">
+                                  <FaUtensils size={12} />
+                                </div>
+                              )}
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-xs font-semibold text-[#c8d3eb]">
+                                  {item.name}
+                                </p>
+                                <p className="text-[0.65rem] text-[#617393]">
+                                  ×{item.quantity}
+                                </p>
+                              </div>
+                              <span className="shrink-0 text-xs font-semibold text-[#dce6ff]">
+                                ৳{(item.price * item.quantity).toFixed(0)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="mt-2 border-t border-[#1a2840] pt-2.5 flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-1.5 text-[0.67rem] text-[#617393]">
+                            <FaLocationDot
+                              size={10}
+                              className="shrink-0 text-[#ff8f6a]"
+                            />
+                            <span className="truncate max-w-35 sm:max-w-50">
+                              {order.address}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <FaCreditCard
+                              size={10}
+                              className="text-[#9ba5be]"
+                            />
+                            <span className="text-[0.67rem] text-[#9ba5be]">
+                              {order.payment}
+                            </span>
+                            <span className="ml-2 text-xs font-bold text-[#63e6be]">
+                              ৳{order.total.toFixed(0)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Footer — Clear History */}
+              {orderHistory.length > 0 && (
+                <div className="relative z-10 shrink-0 border-t border-[#1a2840] px-4 py-3 sm:px-5">
+                  <button
+                    onClick={() => {
+                      setOrderHistory([]);
+                      window.localStorage.removeItem("e-vendoza-order-history");
+                      toast.info("Order history cleared");
+                    }}
+                    className="group flex w-full items-center justify-center gap-2 rounded-xl border border-[#3a1c1c] bg-[rgba(255,80,80,0.06)] py-2.5 text-sm font-semibold text-[#ff7070] transition hover:bg-[rgba(255,80,80,0.12)] hover:border-[#ff6b6b]/40"
+                  >
+                    <FaTrashCan
+                      size={13}
+                      className="transition group-hover:scale-110"
+                    />
+                    Clear All History
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>,
+          document.body,
+        )}
 
       {checkoutOpen &&
         typeof document !== "undefined" &&

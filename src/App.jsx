@@ -8,10 +8,51 @@ import NavBar from "./components/NavBar/NavBar";
 import Offers from "./components/Offers/Offers";
 import ScrollUpButton from "./components/ScrollUpButton/ScrollUpButton";
 import Testimonials from "./components/Testimonials/Testimonials";
+import ToastContainer from "./components/Toast/ToastContainer";
+
+const AUTH_SESSION_KEY = "e-vendoza-auth-session";
+
+const loadFromStorage = (key, fallback = []) => {
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch {
+    // corrupted data — fall through to fallback
+  }
+  return fallback;
+};
+
+const isLoggedIn = () => {
+  try {
+    const session =
+      window.localStorage.getItem(AUTH_SESSION_KEY) ||
+      window.sessionStorage.getItem(AUTH_SESSION_KEY);
+    if (!session) return false;
+    const parsed = JSON.parse(session);
+    return !!parsed?.email;
+  } catch {
+    return false;
+  }
+};
+
+const requireAuth = (callback) => {
+  if (isLoggedIn()) {
+    callback();
+  } else {
+    window.dispatchEvent(new CustomEvent("open-auth-modal"));
+  }
+};
 
 function App() {
-  const [addToCartItems, setAddToCartItems] = useState([]);
-  const [favoriteItems, setFavoriteItems] = useState([]);
+  const [addToCartItems, setAddToCartItems] = useState(() =>
+    loadFromStorage("e-vendoza-cart-items"),
+  );
+  const [favoriteItems, setFavoriteItems] = useState(() =>
+    loadFromStorage("e-vendoza-favorite-items"),
+  );
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -55,7 +96,23 @@ function App() {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, []);
 
-  const handleAddToCart = (meal, price, meta = {}) => {
+  // Persist cart to localStorage on every change
+  useEffect(() => {
+    window.localStorage.setItem(
+      "e-vendoza-cart-items",
+      JSON.stringify(addToCartItems),
+    );
+  }, [addToCartItems]);
+
+  // Persist favorites to localStorage on every change
+  useEffect(() => {
+    window.localStorage.setItem(
+      "e-vendoza-favorite-items",
+      JSON.stringify(favoriteItems),
+    );
+  }, [favoriteItems]);
+
+  const addToCart = (meal, price, meta = {}) => {
     setAddToCartItems((prevItems) => {
       const cartId = meta.cartId ?? meal.idMeal;
       const existingItem = prevItems.find((item) => item.id === cartId);
@@ -81,12 +138,18 @@ function App() {
     });
   };
 
+  const handleAddToCart = (meal, price, meta = {}) => {
+    requireAuth(() => addToCart(meal, price, meta));
+  };
+
   const handleBuyNow = (meal, price, meta = {}) => {
-    handleAddToCart(meal, price, meta);
-    if (meta.scrollToTop) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-    window.dispatchEvent(new CustomEvent("open-cart-panel"));
+    requireAuth(() => {
+      addToCart(meal, price, meta);
+      if (meta.scrollToTop) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      window.dispatchEvent(new CustomEvent("open-cart-panel"));
+    });
   };
 
   const handleIncreaseQty = (id) => {
@@ -117,7 +180,11 @@ function App() {
     setAddToCartItems([]);
   };
 
-  const handleToggleFavorite = (meal, price) => {
+  const handleClearFavorites = () => {
+    setFavoriteItems([]);
+  };
+
+  const toggleFavorite = (meal, price) => {
     setFavoriteItems((prevItems) => {
       const exists = prevItems.some((item) => item.id === meal.idMeal);
       if (exists) {
@@ -136,12 +203,17 @@ function App() {
     });
   };
 
+  const handleToggleFavorite = (meal, price) => {
+    requireAuth(() => toggleFavorite(meal, price));
+  };
+
   const handleRemoveFavorite = (id) => {
     setFavoriteItems((prevItems) => prevItems.filter((item) => item.id !== id));
   };
 
   return (
     <>
+      <ToastContainer />
       <NavBar
         addToCartItems={addToCartItems}
         favoriteItems={favoriteItems}
@@ -154,6 +226,7 @@ function App() {
         onRemoveFavorite={handleRemoveFavorite}
         onAddToCart={handleAddToCart}
         onClearCart={handleClearCart}
+        onClearFavorites={handleClearFavorites}
       />
       <Hero onAddToCart={handleAddToCart} />
 

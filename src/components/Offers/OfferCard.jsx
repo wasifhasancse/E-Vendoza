@@ -4,8 +4,10 @@ import {
   FaCartPlus,
   FaTag,
 } from "react-icons/fa6";
+import { useToast } from "../Toast/useToast";
 
 const OfferCard = ({ offer, onAddToCart, onBuyNow, onViewDetails }) => {
+  const toast = useToast();
   const cardMeal = offer.meal ?? {};
 
   const handleAdd = () => {
@@ -15,6 +17,7 @@ const OfferCard = ({ offer, onAddToCart, onBuyNow, onViewDetails }) => {
       offerType: offer.offerType,
       offerLabel: offer.offerLabel,
     });
+    toast.success(`${cardMeal.strMeal || offer.title} added to cart! 🛒`);
   };
 
   const handleBuy = () => {
@@ -24,6 +27,7 @@ const OfferCard = ({ offer, onAddToCart, onBuyNow, onViewDetails }) => {
       offerType: offer.offerType,
       offerLabel: offer.offerLabel,
     });
+    toast.success(`${cardMeal.strMeal || offer.title} ready to checkout! 🎉`);
   };
 
   return (

@@ -2,6 +2,17 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 .developer-signature {
   font-family: "Just Me Again Down Here", cursive;
   font-size: clamp(1.9rem, 3vw, 2.8rem);
