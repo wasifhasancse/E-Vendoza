@@ -86,12 +86,13 @@ const Menu = ({
           </div>
         ) : (
           <div className="mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
-            {allCategoriesData.map((categoriesData) => (
+            {allCategoriesData.map((categoriesData, index) => (
               <MenuItemCard
                 key={categoriesData.idCategory}
                 categoriesData={categoriesData}
                 setSelectedCategory={onSelectCategory}
                 isActive={effectiveCategory === categoriesData.strCategory}
+                index={index}
               />
             ))}
           </div>

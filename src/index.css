@@ -188,3 +188,38 @@
     opacity: 0.95;
   }
 }
+
+
+/* ---- Smooth global scroll ---- */
+html { scroll-behavior: smooth; }
+
+/* ---- Thin custom scrollbar ---- */
+* { scrollbar-width: thin; scrollbar-color: #1a2540 transparent; }
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: #1a2540; border-radius: 999px; }
+*::-webkit-scrollbar-thumb:hover { background: #2b3d5e; }
+
+/* ---- Keyboard focus ring ---- */
+:focus-visible {
+  outline: 2px solid rgba(99,230,190,0.55);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---- Section entrance animation ---- */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---- Toast progress bar ---- */
+@keyframes toastProgress {
+  from { width: 100%; }
+  to   { width: 0%; }
+}

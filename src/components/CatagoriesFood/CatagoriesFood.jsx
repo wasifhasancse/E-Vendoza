@@ -133,7 +133,7 @@ const CatagoriesFood = ({
 
       {/* Meals grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
-        {mealsData.map((meal) => {
+        {mealsData.map((meal, index) => {
           const price = getMealPrice(meal.idMeal);
           const rating = getMealRating(meal.idMeal);
           const isFavorite = favoriteItems.some(
@@ -144,6 +144,10 @@ const CatagoriesFood = ({
             <article
               key={meal.idMeal}
               onClick={() => setSelectedMealId(meal.idMeal)}
+              style={{
+                animation: `fadeInScale 0.45s ease-out both`,
+                animationDelay: `${index * 55}ms`,
+              }}
               className="group relative flex flex-col overflow-hidden rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] shadow-[0_12px_30px_rgba(2,8,20,0.32)] transition-all duration-300 hover:-translate-y-1 hover:border-[#3d5480] hover:shadow-[0_18px_34px_rgba(2,8,20,0.48)] cursor-pointer"
             >
               <div className="pointer-events-none absolute -left-8 -top-8 h-32 w-32 rounded-full bg-[radial-gradient(circle,rgba(99,230,190,0.12)_0%,transparent_70%)] blur-3xl transition-transform duration-500 group-hover:scale-125" />
@@ -154,6 +158,11 @@ const CatagoriesFood = ({
                   src={meal.strMealThumb}
                   alt={meal.strMeal}
                   loading="lazy"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.style.opacity = "0.3";
+                    e.target.style.filter = "grayscale(1)";
+                  }}
                   className="w-full aspect-5/4 object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 {/* Gradient overlay */}

@@ -50,24 +50,13 @@ const ScrollUpButton = () => {
           </div>
 
           {/* Tooltip */}
-          <div className="absolute -top-10 right-0 hidden group-hover:block whitespace-nowrap rounded-lg bg-[#1a2035] px-2 py-1 text-xs font-bold text-[#63e6be] border border-[#63e6be] shadow-lg pointer-events-none animate-fa-in">
-            Top
+          <div className="absolute -top-10 right-0 whitespace-nowrap rounded-lg bg-[#1a2035] px-2 py-1 text-xs font-bold text-[#63e6be] border border-[#63e6be]/60 shadow-lg pointer-events-none opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
+            Back to top
           </div>
         </button>
       )}
 
       <style>{`
-        @keyframes fa-in {
-          from {
-            opacity: 0;
-            transform: translateY(4px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
         @media (prefers-reduced-motion: reduce) {
           * {
             animation-duration: 0.01ms !important;

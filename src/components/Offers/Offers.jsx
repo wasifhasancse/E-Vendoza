@@ -161,10 +161,11 @@ const Offers = ({ onAddToCart, onBuyNow }) => {
               </p>
             </div>
           ) : (
-            offersData.offers.map((offer) => (
+            offersData.offers.map((offer, index) => (
               <OfferCard
                 key={offer.id}
                 offer={offer}
+                index={index}
                 onAddToCart={onAddToCart}
                 onBuyNow={onBuyNow}
                 onViewDetails={(offer) => setSelectedMealId(offer.meal?.idMeal)}

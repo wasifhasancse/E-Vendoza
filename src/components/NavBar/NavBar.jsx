@@ -159,6 +159,8 @@ const NavBar = ({
   const [authModalMode, setAuthModalMode] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const allCategories = categories ?? [];
+  const [activeSection, setActiveSection] = useState("Home");
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const totalItems = addToCartItems.reduce(
     (sum, item) => sum + item.quantity,
@@ -548,6 +550,39 @@ const NavBar = ({
     };
   }, []);
 
+  // ── Active section tracking via IntersectionObserver ────────────────────────
+  useEffect(() => {
+    const SECTION_MAP = [
+      { id: "hero-section", link: "Home" },
+      { id: "menu-section", link: "Menu" },
+      { id: "menu-items-section", link: "Food" },
+      { id: "about-section", link: "About" },
+    ];
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const match = SECTION_MAP.find((s) => s.id === entry.target.id);
+            if (match) setActiveSection(match.link);
+          }
+        });
+      },
+      { rootMargin: "-20% 0px -70% 0px" },
+    );
+    SECTION_MAP.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  // ── Scroll-aware navbar background ──────────────────────────────────────────
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 24);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   const handleCheckoutSubmit = () => {
     const errors = {};
     if (!checkoutForm.name.trim()) errors.name = "Full name is required";
@@ -925,7 +960,7 @@ const NavBar = ({
   return (
     <header
       ref={navRef}
-      className="sticky top-0 z-50 border-b border-[#1c2b43] bg-[rgba(9,14,28,0.92)] backdrop-blur-md"
+      className={`sticky top-0 z-50 border-b backdrop-blur-md transition-all duration-300 ${isScrolled ? "border-[#1c2b43] bg-[rgba(9,14,28,0.97)] shadow-[0_4px_20px_rgba(2,8,20,0.45)]" : "border-transparent bg-[rgba(9,14,28,0.82)]"}`}
     >
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between gap-2 sm:gap-4">
@@ -947,11 +982,9 @@ const NavBar = ({
                 <button
                   onClick={() => handleMenuLinkClick(link)}
                   className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors cursor-pointer ${
-                    link === "Menu" && categoriesOpen
+                    activeSection === link || (link === "Menu" && categoriesOpen)
                       ? "text-[#63e6be] bg-[rgba(99,230,190,0.08)]"
-                      : i === 0
-                        ? "text-[#63e6be] bg-[rgba(99,230,190,0.08)]"
-                        : "text-[#8897b5] hover:text-[#f5f7ff] hover:bg-[rgba(255,255,255,0.05)]"
+                      : "text-[#8897b5] hover:text-[#f5f7ff] hover:bg-[rgba(255,255,255,0.05)]"
                   }`}
                 >
                   {link}
@@ -1651,7 +1684,7 @@ const NavBar = ({
                   <button
                     onClick={() => handleMenuLinkClick(link, true)}
                     className={`w-full text-left rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                      i === 0
+                      activeSection === link
                         ? "text-[#63e6be] bg-[rgba(99,230,190,0.08)]"
                         : "text-[#8897b5] hover:text-[#f5f7ff] hover:bg-[rgba(255,255,255,0.05)]"
                     }`}

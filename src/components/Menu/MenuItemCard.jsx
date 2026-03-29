@@ -1,6 +1,6 @@
 import { FaArrowRightLong, FaBowlFood, FaFire, FaStar } from "react-icons/fa6";
 
-const MenuItemCard = ({ categoriesData, setSelectedCategory, isActive }) => {
+const MenuItemCard = ({ categoriesData, setSelectedCategory, isActive, index = 0 }) => {
   const manageMenuExplore = () => {
     setSelectedCategory(categoriesData.strCategory);
     // Small delay lets React re-render the food list before scrolling
@@ -14,6 +14,7 @@ const MenuItemCard = ({ categoriesData, setSelectedCategory, isActive }) => {
   return (
     <article
       onClick={manageMenuExplore}
+      style={{ animation: "fadeInScale 0.45s ease-out both", animationDelay: `${index * 65}ms` }}
       className={`group relative flex flex-col rounded-2xl border cursor-pointer bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] shadow-[0_12px_30px_rgba(2,8,20,0.32)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(2,8,20,0.5)] ${
         isActive
           ? "border-[#63e6be] shadow-[0_18px_36px_rgba(99,230,190,0.22)]"

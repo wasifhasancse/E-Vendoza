@@ -6,7 +6,7 @@ import {
 } from "react-icons/fa6";
 import { useToast } from "../Toast/useToast";
 
-const OfferCard = ({ offer, onAddToCart, onBuyNow, onViewDetails }) => {
+const OfferCard = ({ offer, onAddToCart, onBuyNow, onViewDetails, index = 0 }) => {
   const toast = useToast();
   const cardMeal = offer.meal ?? {};
 
@@ -33,7 +33,7 @@ const OfferCard = ({ offer, onAddToCart, onBuyNow, onViewDetails }) => {
   return (
     <article
       className="group relative flex flex-col rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] shadow-[0_12px_30px_rgba(2,8,20,0.32)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_38px_rgba(2,8,20,0.46)]"
-      style={{ borderTopColor: offer.borderAccent, borderTopWidth: 3 }}
+      style={{ borderTopColor: offer.borderAccent, borderTopWidth: 3, animation: "fadeInScale 0.45s ease-out both", animationDelay: `${index * 70}ms` }}
     >
       <div
         className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full blur-3xl"
