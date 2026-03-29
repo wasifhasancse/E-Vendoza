@@ -34,7 +34,6 @@ const STYLES = {
 };
 
 const ToastNotification = ({
-  id,
   message,
   type = "success",
   duration = 2500,
@@ -64,7 +63,7 @@ const ToastNotification = ({
     >
       <article
         className={
-          "relative overflow-hidden rounded-xl border px-4 py-3 flex items-center gap-3 backdrop-blur-md shadow-[0_12px_32px_rgba(0,0,0,0.32)] min-w-[260px] max-w-[360px] " +
+          "relative overflow-hidden rounded-xl border px-4 py-3 flex items-center gap-3 backdrop-blur-md shadow-[0_12px_32px_rgba(0,0,0,0.32)] min-w-65 max-w-90 " +
           style.bg +
           " " +
           style.border
@@ -85,7 +84,9 @@ const ToastNotification = ({
         </div>
 
         {/* Message */}
-        <p className={"text-sm font-semibold line-clamp-2 flex-1 " + style.text}>
+        <p
+          className={"text-sm font-semibold line-clamp-2 flex-1 " + style.text}
+        >
           {message}
         </p>
 
@@ -101,7 +102,7 @@ const ToastNotification = ({
         {/* Progress bar */}
         {duration > 0 && (
           <div
-            className="absolute bottom-0 left-0 h-[3px] rounded-full"
+            className="absolute bottom-0 left-0 h-0.75 rounded-full"
             style={{
               background: style.icon,
               animation: "toastProgress " + duration + "ms linear forwards",
