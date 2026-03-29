@@ -29,6 +29,45 @@
   gap: 0.4rem;
 }
 
+.developer-signature-card {
+  position: relative;
+  margin-inline: auto;
+  width: min(100%, 30rem);
+  border-radius: 1rem;
+  border: 1px solid #1c2b43;
+  background:
+    radial-gradient(
+      ellipse at 14% 18%,
+      rgba(99, 230, 190, 0.08) 0%,
+      transparent 48%
+    ),
+    radial-gradient(
+      ellipse at 88% 86%,
+      rgba(255, 143, 106, 0.08) 0%,
+      transparent 46%
+    ),
+    linear-gradient(160deg, rgba(16, 24, 42, 0.96), rgba(9, 14, 27, 0.96));
+  padding: 1rem 1.2rem 1.05rem;
+  box-shadow: 0 12px 28px rgba(2, 8, 20, 0.3);
+}
+
+.developer-signature-label {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #5d6f92;
+}
+
+.developer-signature-meta {
+  margin-top: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #7a89a7;
+}
+
 .developer-signature-row {
   display: flex;
   align-items: center;

@@ -1,0 +1,101 @@
+{
+  "about": {
+    "eyebrow": "About E-Vendoza",
+    "title": "Built For Fast, Fresh, Reliable Food Delivery",
+    "description": "E-Vendoza connects hungry customers with trusted local kitchens and premium restaurants. Our focus is simple: quality meals, transparent pricing, and a smooth ordering experience from search to doorstep.",
+    "highlights": [
+      {
+        "title": "Live Order Tracking",
+        "description": "Track every order in real time from confirmation to doorstep handoff."
+      },
+      {
+        "title": "Curated Restaurant Partners",
+        "description": "We partner with trusted kitchens to maintain food quality and consistency."
+      },
+      {
+        "title": "Secure Checkout",
+        "description": "Simple and secure checkout flow with clear totals and no hidden fees."
+      }
+    ],
+    "stats": [
+      { "label": "Orders Delivered", "value": "120K+" },
+      { "label": "Restaurant Partners", "value": "500+" },
+      { "label": "Customer Rating", "value": "4.9/5" },
+      { "label": "Avg Delivery", "value": "30 min" }
+    ]
+  },
+  "developer": {
+    "enabled": true,
+    "label": "Crafted & Developed By",
+    "name": "Wasif Hasan",
+    "role": "Full-Stack Developer",
+    "location": "Bangladesh",
+    "bio": "Focused on building responsive interfaces, robust frontend architecture, and smooth user experiences for real-world products."
+  },
+  "footer": {
+    "brandDescription": "Bangladesh's fast and reliable food delivery platform. Connecting customers with trusted restaurants for hot, fresh meals every day.",
+    "contact": {
+      "city": "Dhaka, Bangladesh",
+      "phone": "+880 1XXXXXXXXX",
+      "email": "support@e-vendoza.com"
+    },
+    "columns": [
+      {
+        "heading": "Company",
+        "links": [
+          { "label": "About", "href": "#about-section" },
+          { "label": "Menu", "href": "#menu-section" },
+          { "label": "Food", "href": "#menu-items-section" },
+          { "label": "Offers", "href": "#offers-section" },
+          { "label": "Testimonials", "href": "#testimonials-section" }
+        ]
+      },
+      {
+        "heading": "For Customers",
+        "links": [
+          { "label": "How It Works", "href": "#how-it-works-section" },
+          { "label": "Delivery Areas", "href": "#about-section" },
+          { "label": "Offers & Promos", "href": "#offers-section" },
+          { "label": "Gift Cards", "href": "#" },
+          { "label": "Refer a Friend", "href": "#" }
+        ]
+      },
+      {
+        "heading": "Support",
+        "links": [
+          { "label": "Help Center", "href": "#" },
+          { "label": "Track My Order", "href": "#" },
+          { "label": "Refund Policy", "href": "#" },
+          { "label": "Terms of Service", "href": "#" },
+          { "label": "Privacy Policy", "href": "#" }
+        ]
+      }
+    ],
+    "social": [
+      {
+        "icon": "facebook",
+        "label": "Facebook",
+        "href": "#",
+        "color": "#4267B2"
+      },
+      {
+        "icon": "instagram",
+        "label": "Instagram",
+        "href": "#",
+        "color": "#E1306C"
+      },
+      {
+        "icon": "twitter",
+        "label": "Twitter / X",
+        "href": "#",
+        "color": "#1DA1F2"
+      },
+      { "icon": "youtube", "label": "YouTube", "href": "#", "color": "#FF0000" }
+    ],
+    "legal": [
+      { "label": "Privacy Policy", "href": "#" },
+      { "label": "Terms of Service", "href": "#" },
+      { "label": "Cookie Policy", "href": "#" }
+    ]
+  }
+}

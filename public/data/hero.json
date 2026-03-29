@@ -1,0 +1,46 @@
+{
+  "stats": [
+    { "value": "500+", "label": "Restaurants" },
+    { "value": "28 min", "label": "Avg Delivery" },
+    { "value": "50K+", "label": "Orders/Day" },
+    { "value": "4.9 ★", "label": "App Rating" }
+  ],
+  "avatars": [
+    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",
+    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+    "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80"
+  ],
+  "howItWorks": [
+    {
+      "step": "01",
+      "icon": "clock",
+      "accent": "#63e6be",
+      "iconBg": "bg-[rgba(99,230,190,0.14)]",
+      "borderTop": "border-t-[#63e6be]",
+      "glow": "shadow-[0_0_22px_rgba(99,230,190,0.18)]",
+      "title": "Choose Your Meal",
+      "description": "Browse 500+ restaurants across Bangladesh. Filter by cuisine, price, or rating — find exactly what you crave in seconds."
+    },
+    {
+      "step": "02",
+      "icon": "motorcycle",
+      "accent": "#ffd166",
+      "iconBg": "bg-[rgba(255,209,102,0.14)]",
+      "borderTop": "border-t-[#ffd166]",
+      "glow": "shadow-[0_0_22px_rgba(255,209,102,0.16)]",
+      "title": "Fast Delivery",
+      "description": "Verified local riders pick up your order and deliver it piping-hot to your door — average time just 28 minutes."
+    },
+    {
+      "step": "03",
+      "icon": "shield",
+      "accent": "#ff8f6a",
+      "iconBg": "bg-[rgba(255,143,106,0.14)]",
+      "borderTop": "border-t-[#ff8f6a]",
+      "glow": "shadow-[0_0_22px_rgba(255,143,106,0.16)]",
+      "title": "Safe & Hygienic",
+      "description": "Every order is hygienically packed, tracked live on the map, and quality-checked before it leaves the kitchen."
+    }
+  ]
+}

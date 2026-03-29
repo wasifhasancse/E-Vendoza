@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import About from "./components/About/About";
 import Footer from "./components/Footer/Footer";
 import Hero from "./components/Hero/Hero";
 import Menu from "./components/Menu/Menu";
 import NavBar from "./components/NavBar/NavBar";
 import Offers from "./components/Offers/Offers";
+import ScrollUpButton from "./components/ScrollUpButton/ScrollUpButton";
 import Testimonials from "./components/Testimonials/Testimonials";
 
 function App() {
@@ -46,6 +48,11 @@ function App() {
     return () => {
       isMounted = false;
     };
+  }, []);
+
+  // Scroll to top on page load/reload
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, []);
 
   const handleAddToCart = (meal, price, meta = {}) => {
@@ -161,8 +168,10 @@ function App() {
         favoriteItems={favoriteItems}
       />
       <Offers onAddToCart={handleAddToCart} onBuyNow={handleBuyNow} />
+      <About />
       <Testimonials />
       <Footer />
+      <ScrollUpButton />
     </>
   );
 }

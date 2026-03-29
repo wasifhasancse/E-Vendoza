@@ -16,49 +16,49 @@ const ICON_MAP = {
   bolt: FaBolt,
 };
 
+const getMealBasePrice = (mealId) => {
+  const id = mealId ?? "offer-default";
+  let hash = 11;
+  for (let i = 0; i < id.length; i += 1) {
+    hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  }
+  return (hash % 481) + 220;
+};
+
+const getFinalPriceByOffer = (basePrice, offer) => {
+  if (offer.offerType === "free_item") return 0;
+  if (offer.offerType === "percent_off") {
+    const percent = Number(offer.discountPercent) || 0;
+    return Math.max(0, Math.round(basePrice - (basePrice * percent) / 100));
+  }
+  if (offer.offerType === "flat_off") {
+    const amount = Number(offer.discountAmount) || 0;
+    return Math.max(0, Math.round(basePrice - amount));
+  }
+  return basePrice;
+};
+
+const buildOfferWithMeal = (template, meal) => {
+  const basePrice = getMealBasePrice(meal?.idMeal);
+  const finalPrice = getFinalPriceByOffer(basePrice, template);
+  const cartFood = {
+    idMeal: `${meal?.idMeal ?? template.id}-${template.id}`,
+    strMeal: meal?.strMeal ?? template.title,
+    strMealThumb: meal?.strMealThumb ?? template.image,
+  };
+
+  return {
+    ...template,
+    meal,
+    cartFood,
+    basePrice,
+    finalPrice,
+  };
+};
+
 const Offers = ({ onAddToCart, onBuyNow }) => {
   const [offersData, setOffersData] = useState({ offers: [], highlights: [] });
   const [selectedMealId, setSelectedMealId] = useState(null);
-
-  const getMealBasePrice = (mealId) => {
-    const id = mealId ?? "offer-default";
-    let hash = 11;
-    for (let i = 0; i < id.length; i += 1) {
-      hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-    }
-    return (hash % 481) + 220;
-  };
-
-  const getFinalPriceByOffer = (basePrice, offer) => {
-    if (offer.offerType === "free_item") return 0;
-    if (offer.offerType === "percent_off") {
-      const percent = Number(offer.discountPercent) || 0;
-      return Math.max(0, Math.round(basePrice - (basePrice * percent) / 100));
-    }
-    if (offer.offerType === "flat_off") {
-      const amount = Number(offer.discountAmount) || 0;
-      return Math.max(0, Math.round(basePrice - amount));
-    }
-    return basePrice;
-  };
-
-  const buildOfferWithMeal = (template, meal) => {
-    const basePrice = getMealBasePrice(meal?.idMeal);
-    const finalPrice = getFinalPriceByOffer(basePrice, template);
-    const cartFood = {
-      idMeal: `${meal?.idMeal ?? template.id}-${template.id}`,
-      strMeal: meal?.strMeal ?? template.title,
-      strMealThumb: meal?.strMealThumb ?? template.image,
-    };
-
-    return {
-      ...template,
-      meal,
-      cartFood,
-      basePrice,
-      finalPrice,
-    };
-  };
 
   useEffect(() => {
     let mounted = true;

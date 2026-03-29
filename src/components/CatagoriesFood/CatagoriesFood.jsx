@@ -1,6 +1,5 @@
 import { use, useState } from "react";
 import {
-  FaArrowRightLong,
   FaArrowUp,
   FaBowlFood,
   FaCartShopping,
@@ -142,33 +141,35 @@ const CatagoriesFood = ({
           return (
             <article
               key={meal.idMeal}
-              className="group relative flex flex-col overflow-hidden rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] shadow-[0_12px_30px_rgba(2,8,20,0.32)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#3d5480] hover:shadow-[0_18px_34px_rgba(2,8,20,0.48)]"
+              onClick={() => setSelectedMealId(meal.idMeal)}
+              className="group relative flex flex-col overflow-hidden rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] shadow-[0_12px_30px_rgba(2,8,20,0.32)] transition-all duration-300 hover:-translate-y-1 hover:border-[#3d5480] hover:shadow-[0_18px_34px_rgba(2,8,20,0.48)] cursor-pointer"
             >
-              <div className="pointer-events-none absolute -left-8 -top-8 h-28 w-28 rounded-full bg-[radial-gradient(circle,rgba(99,230,190,0.1)_0%,transparent_70%)] blur-3xl" />
+              <div className="pointer-events-none absolute -left-8 -top-8 h-32 w-32 rounded-full bg-[radial-gradient(circle,rgba(99,230,190,0.12)_0%,transparent_70%)] blur-3xl transition-transform duration-500 group-hover:scale-125" />
+
               {/* Image block */}
               <div className="relative overflow-hidden">
                 <img
                   src={meal.strMealThumb}
                   alt={meal.strMeal}
                   loading="lazy"
-                  className="w-full aspect-5/4 object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="w-full aspect-5/4 object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(9,14,26,0.72)_0%,transparent_50%)]" />
+                <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(9,14,26,0.8)_0%,rgba(9,14,26,0.3)_50%,transparent_100%)] transition-opacity duration-300" />
 
                 {/* Price badge – top right */}
-                <span className="absolute right-3 top-3 rounded-xl bg-[#63e6be] px-2.5 py-1 text-[0.8rem] font-extrabold text-[#071a12] shadow-lg">
+                <span className="absolute right-4 top-4 rounded-xl bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] px-3 py-1.5 text-[0.85rem] font-extrabold text-[#071a12] shadow-lg border border-[rgba(99,230,190,0.4)] transition-transform duration-300 group-hover:scale-105">
                   ৳{price}
                 </span>
 
                 {/* Popular badge – top left */}
-                <span className="absolute left-3 top-3 inline-flex items-center gap-1 overflow-hidden rounded-full border border-[#2f354a] bg-[#1a2035] px-2.5 py-1 text-[0.7rem] font-bold text-[#ffd166] shadow-[0_0_18px_rgba(255,143,106,0.1)]">
+                <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 overflow-hidden rounded-full border border-[#2f354a] bg-[#1a2035] px-3 py-1.5 text-[0.72rem] font-bold text-[#ffd166] shadow-[0_0_18px_rgba(255,143,106,0.14)] backdrop-blur-sm">
                   <span className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,143,106,0.14),transparent_72%)] animate-pulse" />
                   <span className="relative flex h-1.5 w-1.5 shrink-0">
                     <span className="absolute inline-flex h-full w-full rounded-full bg-[#ff8f6a] opacity-75 animate-ping" />
                     <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#ffd166]" />
                   </span>
-                  <FaFire className="relative text-[#ff9a76]" size={10} />
+                  <FaFire className="relative text-[#ff9a76]" size={12} />
                   <span className="relative">Popular</span>
                 </span>
               </div>
@@ -176,27 +177,27 @@ const CatagoriesFood = ({
               {/* Card body */}
               <div className="flex flex-1 flex-col p-4 md:p-5">
                 {/* Rating row */}
-                <div className="flex items-center gap-1.5">
-                  <div className="flex items-center gap-0.5">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <FaStar
                         key={star}
-                        size={11}
+                        size={12}
                         className={
                           star <= Math.round(rating)
-                            ? "text-[#ffd166]"
+                            ? "text-[#ffd166] transition-transform duration-200"
                             : "text-[#3a4768]"
                         }
                       />
                     ))}
                   </div>
-                  <span className="text-xs font-bold text-[#8897b5]">
-                    {rating}
+                  <span className="text-xs font-bold text-[#8897b5] ml-1">
+                    ({rating})
                   </span>
                 </div>
 
                 {/* Meal name */}
-                <h4 className="mt-2.5 line-clamp-2 text-[1.05rem] font-extrabold leading-snug text-[#eef2ff]">
+                <h4 className="mt-3 line-clamp-2 text-[1.08rem] font-extrabold leading-snug text-[#eef2ff]">
                   {meal.strMeal}
                 </h4>
 
@@ -204,57 +205,59 @@ const CatagoriesFood = ({
                 <div className="flex-1" />
 
                 {/* Footer row */}
-                <div className="mt-4 pt-3 border-t border-[#1c2b43]">
-                  <div className="mb-2.5 flex items-center justify-between gap-2">
+                <div className="mt-4 pt-4 border-t border-[#1c2b43]">
+                  <div className="mb-3 flex items-center justify-between gap-2">
                     <div className="flex flex-col">
-                      <span className="text-[0.68rem] font-semibold uppercase tracking-widest text-[#8897b5]">
+                      <span className="text-[0.7rem] font-semibold uppercase tracking-widest text-[#8897b5]">
                         Price
                       </span>
-                      <span className="text-[1.1rem] font-black text-[#63e6be]">
+                      <span className="mt-0.5 text-[1.15rem] font-black bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] bg-clip-text text-transparent">
                         ৳{price}
                       </span>
                     </div>
 
                     <button
-                      onClick={() => onToggleFavorite(meal, price)}
-                      className={`grid h-9 w-9 place-items-center rounded-xl border bg-[rgba(16,24,42,0.7)] transition-colors ${
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleFavorite(meal, price);
+                      }}
+                      className={`grid h-10 w-10 place-items-center rounded-xl border transition-all duration-300 ${
                         isFavorite
-                          ? "border-[#ff8f6a] text-[#ff8f6a]"
-                          : "border-[#2b3d5e] text-[#c8d3eb] hover:border-[#ff8f6a] hover:text-[#ff8f6a]"
+                          ? "border-[#ff8f6a] bg-[rgba(255,143,106,0.15)] text-[#ff8f6a] scale-105"
+                          : "border-[#2b3d5e] bg-[rgba(16,24,42,0.7)] text-[#c8d3eb] hover:border-[#ff8f6a] hover:text-[#ff8f6a] hover:bg-[rgba(255,143,106,0.05)]"
                       }`}
                       aria-label="Add to favorite"
                     >
-                      <FaHeart size={13} />
+                      <FaHeart
+                        size={14}
+                        className={isFavorite ? "animate-bounce" : ""}
+                      />
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <button
-                      onClick={() => onAddToCart(meal, price)}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] px-3 py-2.5 text-sm font-bold text-[#061510] shadow-[0_6px_18px_rgba(99,230,190,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_22px_rgba(99,230,190,0.42)]"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAddToCart(meal, price);
+                      }}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] px-3 py-2.5 text-sm font-bold text-[#061510] shadow-[0_6px_18px_rgba(99,230,190,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_22px_rgba(99,230,190,0.42)] active:translate-y-0"
                     >
-                      <FaCartShopping size={13} />
+                      <FaCartShopping size={14} />
                       Add to Cart
                     </button>
 
                     <button
-                      onClick={() => onBuyNow?.(meal, price)}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-[rgba(255,209,102,0.45)] bg-[linear-gradient(135deg,#ffd166,#ffb347)] px-3 py-2.5 text-sm font-black text-[#2a1800] shadow-[0_8px_20px_rgba(255,209,102,0.24)] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-105"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onBuyNow?.(meal, price);
+                      }}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-[rgba(255,209,102,0.45)] bg-[linear-gradient(135deg,#ffd166,#ffb347)] px-3 py-2.5 text-sm font-black text-[#2a1800] shadow-[0_8px_20px_rgba(255,209,102,0.24)] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-125 active:translate-y-0"
                     >
                       Buy Now
-                      <span className="rounded-full bg-[rgba(42,24,0,0.12)] px-2 py-0.5 text-[0.66rem] font-extrabold">
+                      <span className="rounded-full bg-[rgba(42,24,0,0.18)] px-2 py-0.5 text-[0.68rem] font-extrabold">
                         ৳{price}
                       </span>
-                    </button>
-                  </div>
-
-                  <div className="mt-1.5 flex justify-center">
-                    <button
-                      onClick={() => setSelectedMealId(meal.idMeal)}
-                      className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-[#8897b5] mt-2.5 transition-colors hover:text-[#eef2ff]"
-                    >
-                      View Details
-                      <FaArrowRightLong size={11} />
                     </button>
                   </div>
                 </div>

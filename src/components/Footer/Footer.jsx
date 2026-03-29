@@ -1,50 +1,65 @@
 import {
-    FaBolt,
-    FaEnvelope,
-    FaFacebook,
-    FaInstagram,
-    FaLocationDot,
-    FaPhone,
-    FaTwitter,
-    FaYoutube,
+  FaBolt,
+  FaCode,
+  FaEnvelope,
+  FaFacebook,
+  FaInstagram,
+  FaLocationDot,
+  FaPhone,
+  FaTwitter,
+  FaYoutube,
 } from "react-icons/fa6";
+import usePublicJson from "../../hooks/usePublicJson";
 
-const FOOTER_LINKS = [
-  {
-    heading: "Company",
-    links: ["About Us", "Careers", "Press & Media", "Blog", "Partner With Us"],
+const FALLBACK_SITE_CONTENT = {
+  developer: {
+    enabled: true,
+    label: "Crafted & Developed By",
+    name: "Wasif Hasan",
+    role: "Full-Stack Developer",
+    location: "Bangladesh",
+    bio: "Focused on building responsive interfaces, robust frontend architecture, and smooth user experiences for real-world products.",
   },
-  {
-    heading: "For Customers",
-    links: [
-      "How It Works",
-      "Delivery Areas",
-      "Offers & Promos",
-      "Gift Cards",
-      "Refer a Friend",
-    ],
+  footer: {
+    brandDescription:
+      "Bangladesh's fast and reliable food delivery platform. Connecting customers with trusted restaurants for hot, fresh meals every day.",
+    contact: {
+      city: "Dhaka, Bangladesh",
+      phone: "+880 1XXXXXXXXX",
+      email: "support@e-vendoza.com",
+    },
+    columns: [],
+    social: [],
+    legal: [],
   },
-  {
-    heading: "Support",
-    links: [
-      "Help Center",
-      "Track My Order",
-      "Refund Policy",
-      "Terms of Service",
-      "Privacy Policy",
-    ],
-  },
-];
+};
 
-const SOCIAL_LINKS = [
-  { Icon: FaFacebook, label: "Facebook", href: "#", color: "#4267B2" },
-  { Icon: FaInstagram, label: "Instagram", href: "#", color: "#E1306C" },
-  { Icon: FaTwitter, label: "Twitter / X", href: "#", color: "#1DA1F2" },
-  { Icon: FaYoutube, label: "YouTube", href: "#", color: "#FF0000" },
-];
+const ICON_MAP = {
+  facebook: FaFacebook,
+  instagram: FaInstagram,
+  twitter: FaTwitter,
+  youtube: FaYoutube,
+};
 
 const Footer = () => {
   const year = new Date().getFullYear();
+  const siteContent = usePublicJson(
+    "/data/siteContent.json",
+    FALLBACK_SITE_CONTENT,
+  );
+  const footer = siteContent?.footer ?? {};
+  const developer = siteContent?.developer ?? {};
+  const footerColumns = Array.isArray(footer.columns) ? footer.columns : [];
+  const socialLinks = Array.isArray(footer.social) ? footer.social : [];
+  const legalLinks = Array.isArray(footer.legal) ? footer.legal : [];
+
+  const handleFooterLinkClick = (event, href) => {
+    if (!href || href === "#" || !href.startsWith("#")) return;
+
+    event.preventDefault();
+    const element = document.querySelector(href);
+    element?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <footer className="relative overflow-hidden border-t border-[#1c2b43] bg-[linear-gradient(180deg,#0a0f1c_0%,#07090f_100%)]">
@@ -115,63 +130,68 @@ const Footer = () => {
               </span>
             </div>
             <p className="text-sm leading-relaxed text-[#8897b5]">
-              Bangladesh&#39;s fastest food delivery platform. Connecting
-              50,000+ customers with 500+ restaurants for hot, fresh meals every
-              day.
+              {footer.brandDescription}
             </p>
 
             {/* Contact info */}
             <div className="space-y-2.5">
               <div className="flex items-center gap-2.5 text-sm text-[#9ba5be]">
                 <FaLocationDot size={13} className="shrink-0 text-[#63e6be]" />
-                Dhaka, Bangladesh
+                {footer.contact?.city}
               </div>
               <div className="flex items-center gap-2.5 text-sm text-[#9ba5be]">
                 <FaPhone size={13} className="shrink-0 text-[#63e6be]" />
-                +880 1XXXXXXXXX
+                {footer.contact?.phone}
               </div>
               <div className="flex items-center gap-2.5 text-sm text-[#9ba5be]">
                 <FaEnvelope size={13} className="shrink-0 text-[#63e6be]" />
-                support@e-vendoza.com
+                {footer.contact?.email}
               </div>
             </div>
 
             {/* Social icons */}
             <div className="flex items-center gap-2 pt-1">
-              {SOCIAL_LINKS.map((social) => (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  aria-label={social.label}
-                  className="grid h-8 w-8 place-items-center rounded-lg border border-[#1c2b43] bg-[rgba(10,16,30,0.7)] text-[#8897b5] transition-all duration-200 hover:-translate-y-0.5 hover:border-transparent hover:text-white"
-                  style={{ "--hover-color": social.color }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.background = social.color + "22")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.background = "rgba(10,16,30,0.7)")
-                  }
-                >
-                  <social.Icon size={14} />
-                </a>
-              ))}
+              {socialLinks.map((social) => {
+                const SocialIcon = ICON_MAP[social.icon];
+                if (!SocialIcon) return null;
+
+                return (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    aria-label={social.label}
+                    className="grid h-8 w-8 place-items-center rounded-lg border border-[#1c2b43] bg-[rgba(10,16,30,0.7)] text-[#8897b5] transition-all duration-200 hover:-translate-y-0.5 hover:border-transparent hover:text-white"
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.background = `${social.color}22`)
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.background = "rgba(10,16,30,0.7)")
+                    }
+                  >
+                    <SocialIcon size={14} />
+                  </a>
+                );
+              })}
             </div>
           </div>
 
           {/* Link columns */}
-          {FOOTER_LINKS.map(({ heading, links }) => (
+          {footerColumns.map(({ heading, links }) => (
             <div key={heading} className="space-y-4">
               <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#f5f7ff]">
                 {heading}
               </p>
               <ul className="space-y-2.5">
                 {links.map((link) => (
-                  <li key={link}>
+                  <li key={link.label}>
                     <a
-                      href="#"
+                      href={link.href}
+                      onClick={(event) =>
+                        handleFooterLinkClick(event, link.href)
+                      }
                       className="text-sm text-[#8897b5] transition-colors hover:text-[#63e6be]"
                     >
-                      {link}
+                      {link.label}
                     </a>
                   </li>
                 ))}
@@ -185,18 +205,19 @@ const Footer = () => {
           <p className="text-xs text-[#5e6f94]">
             © {year} E-Vendoza. All rights reserved.
           </p>
-          <div className="flex items-center gap-4 text-xs text-[#5e6f94]">
-            <a href="#" className="hover:text-[#63e6be] transition-colors">
-              Privacy Policy
-            </a>
-            <span>·</span>
-            <a href="#" className="hover:text-[#63e6be] transition-colors">
-              Terms of Service
-            </a>
-            <span>·</span>
-            <a href="#" className="hover:text-[#63e6be] transition-colors">
-              Cookie Policy
-            </a>
+          <div className="flex items-center gap-3 text-xs text-[#5e6f94]">
+            {legalLinks.map((item, index) => (
+              <div key={item.label} className="flex items-center gap-3">
+                {index > 0 && <span>·</span>}
+                <a
+                  href={item.href}
+                  onClick={(event) => handleFooterLinkClick(event, item.href)}
+                  className="hover:text-[#63e6be] transition-colors"
+                >
+                  {item.label}
+                </a>
+              </div>
+            ))}
           </div>
           <div className="flex items-center gap-1.5">
             <span className="relative flex h-2 w-2 shrink-0">
@@ -209,27 +230,42 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="developer-signature-wrap pb-8 pt-1 text-center">
-          <div className="developer-signature-row">
-            <span className="developer-signature-line" />
-            <p className="text-[0.68rem] uppercase tracking-[0.2em] text-[#5e6f94]">
-              Developer
-            </p>
-            <span className="developer-signature-line" />
-          </div>
+        {developer.enabled && (
+          <div className="pb-8 pt-2">
+            <div className="mb-5 flex items-center gap-3">
+              <div className="h-px flex-1 bg-[linear-gradient(to_right,transparent,#1c2b43,transparent)]" />
+              <span className="grid h-6 w-6 place-items-center rounded-full border border-[#2b3d5e] bg-[rgba(12,19,34,0.78)] text-[#63e6be]">
+                <FaCode size={10} />
+              </span>
+              <div className="h-px flex-1 bg-[linear-gradient(to_right,transparent,#1c2b43,transparent)]" />
+            </div>
 
-          <div className="developer-signature-shell">
-            <span className="developer-signature-spark developer-signature-spark-left">
-              +
-            </span>
-            <span className="developer-signature inline-block">
-              Wasif Hasan
-            </span>
-            <span className="developer-signature-spark developer-signature-spark-right">
-              +
-            </span>
+            <div className="developer-signature-wrap developer-signature-card text-center">
+              <p className="developer-signature-label">{developer.label}</p>
+
+              <div className="developer-signature-shell">
+                <span className="developer-signature-spark developer-signature-spark-left">
+                  +
+                </span>
+                <span className="developer-signature inline-block">
+                  {developer.name}
+                </span>
+                <span className="developer-signature-spark developer-signature-spark-right">
+                  +
+                </span>
+              </div>
+
+              <p className="developer-signature-meta">
+                {developer.role}
+                <span className="mx-2 text-[#4f6284]">|</span>
+                {developer.location}
+              </p>
+              <p className="mt-1 text-[0.72rem] text-[#7f90b0]">
+                {developer.bio}
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </footer>
   );

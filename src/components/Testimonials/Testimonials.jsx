@@ -1,79 +1,28 @@
 import { FaQuoteLeft, FaStar } from "react-icons/fa6";
+import usePublicJson from "../../hooks/usePublicJson";
 
-const REVIEWS = [
-  {
-    id: 1,
-    name: "Fatema Khanam",
-    role: "Regular Customer · Dhaka",
-    avatar:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80",
-    rating: 5,
-    title: "Fastest delivery in town!",
-    body: "I ordered during peak hours and the food was still at my door in under 30 minutes, piping hot. The tracking feature is a game-changer — I could see exactly where my rider was!",
-    tag: "Verified Order",
-    accentColor: "#63e6be",
+const FALLBACK_TESTIMONIALS = {
+  meta: {
+    eyebrow: "Customer Reviews",
+    titleLineOne: "What Our Customers",
+    titleHighlight: "Are Saying",
+    ratingText: "4.9 / 5.0",
+    reviewCount: "12,500+ Reviews",
   },
-  {
-    id: 2,
-    name: "Rahim Uddin",
-    role: "Food Enthusiast · Chittagong",
-    avatar:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80",
-    rating: 5,
-    title: "Great variety, zero hassle",
-    body: "The category filter makes it so easy to find exactly what I'm craving. Found a hidden gem biryani place I never knew existed. The packaging was spotless — will 100% reorder.",
-    tag: "Top Reviewer",
-    accentColor: "#ffd166",
+  cta: {
+    title: "Join 50,000+ happy customers",
+    description:
+      "Order today and leave your own review. Your feedback makes us better every day.",
+    buttonText: "Order & Review",
   },
-  {
-    id: 3,
-    name: "Lamia Sultana",
-    role: "Working Professional · Sylhet",
-    avatar:
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80",
-    rating: 5,
-    title: "My daily lunch partner",
-    body: "I order lunch every weekday. The weekend 20% deal saves me a ton each month. App is smooth, payment with bKash is instant, and customer support actually responds in minutes.",
-    tag: "Daily Customer",
-    accentColor: "#ff8f6a",
-  },
-  {
-    id: 4,
-    name: "Arif Hossain",
-    role: "Student · Rajshahi",
-    avatar:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80",
-    rating: 5,
-    title: "Super affordable for students",
-    body: "Free first delivery and daily promo codes keep my food budget in check. The portions are generous and the food quality matches the restaurant photos — no disappointment at all.",
-    tag: "Verified Order",
-    accentColor: "#a78bfa",
-  },
-  {
-    id: 5,
-    name: "Nusrat Jahan",
-    role: "Homemaker · Comilla",
-    avatar:
-      "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=120&q=80",
-    rating: 5,
-    title: "Even my kids love placing orders",
-    body: "The interface is so simple that my 10-year-old can browse and pick a meal without help. The live order card on the homepage is a brilliant touch — very visual and fun to use.",
-    tag: "Family User",
-    accentColor: "#63e6be",
-  },
-  {
-    id: 6,
-    name: "Shakil Ahmed",
-    role: "Software Engineer · Dhaka",
-    avatar:
-      "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=120&q=80",
-    rating: 5,
-    title: "Best payment integration",
-    body: "I appreciate that Nagad and Rocket are supported alongside bKash. The checkout flow is clean and fast — I've never had a failed transaction. Great work on the tech side too!",
-    tag: "Power User",
-    accentColor: "#ff8f6a",
-  },
-];
+  reviews: [],
+};
+
+const normalizeRating = (rating) => {
+  const number = Number(rating);
+  if (Number.isNaN(number)) return 5;
+  return Math.max(0, Math.min(5, Math.round(number)));
+};
 
 const StarRow = ({ rating }) =>
   Array.from({ length: 5 }).map((_, i) => (
@@ -85,6 +34,30 @@ const StarRow = ({ rating }) =>
   ));
 
 const Testimonials = () => {
+  const testimonialsData = usePublicJson(
+    "/data/testimonials.json",
+    FALLBACK_TESTIMONIALS,
+  );
+  const meta = testimonialsData?.meta ?? FALLBACK_TESTIMONIALS.meta;
+  const cta = testimonialsData?.cta ?? FALLBACK_TESTIMONIALS.cta;
+  const reviews = (
+    Array.isArray(testimonialsData?.reviews)
+      ? testimonialsData.reviews
+      : FALLBACK_TESTIMONIALS.reviews
+  ).map((review, index) => ({
+    id: review?.id ?? `review-${index + 1}`,
+    name: review?.name ?? "Customer",
+    role: review?.role ?? "Verified Customer",
+    avatar:
+      review?.avatar ??
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80",
+    rating: normalizeRating(review?.rating),
+    title: review?.title ?? "Great service",
+    body: review?.body ?? "Had a great ordering and delivery experience.",
+    tag: review?.tag ?? "Verified",
+    accentColor: review?.accentColor ?? "#63e6be",
+  }));
+
   return (
     <section
       id="testimonials-section"
@@ -98,14 +71,14 @@ const Testimonials = () => {
         {/* Section header */}
         <div className="rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] p-4 md:p-5 shadow-[0_16px_36px_rgba(2,8,20,0.35)]">
           <p className="text-[#ff8f6a] tracking-[0.24em] text-xs font-extrabold uppercase">
-            Customer Reviews
+            {meta.eyebrow}
           </p>
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <h2 className="text-[#f5f7ff] text-[1.8rem] sm:text-[2.1rem] md:text-[2.45rem] leading-[1.15] font-black">
-              What Our Customers
+              {meta.titleLineOne}
               <br />
               <span className="bg-[linear-gradient(130deg,#ff8f6a_15%,#ffd166_85%)] bg-clip-text text-transparent">
-                Are Saying
+                {meta.titleHighlight}
               </span>
             </h2>
 
@@ -117,8 +90,12 @@ const Testimonials = () => {
                 ))}
               </div>
               <div>
-                <p className="text-sm font-black text-[#f5f7ff]">4.9 / 5.0</p>
-                <p className="text-[0.68rem] text-[#8897b5]">12,500+ Reviews</p>
+                <p className="text-sm font-black text-[#f5f7ff]">
+                  {meta.ratingText}
+                </p>
+                <p className="text-[0.68rem] text-[#8897b5]">
+                  {meta.reviewCount}
+                </p>
               </div>
             </div>
           </div>
@@ -126,7 +103,7 @@ const Testimonials = () => {
 
         {/* Review grid */}
         <div className="mt-8 columns-1 gap-5 sm:columns-2 lg:columns-3 md:gap-6">
-          {REVIEWS.map((review) => (
+          {reviews.map((review) => (
             <article
               key={review.id}
               className="mb-5 break-inside-avoid rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] p-4 shadow-[0_10px_26px_rgba(2,8,20,0.3)] transition-all duration-250 hover:-translate-y-1 hover:shadow-[0_20px_42px_rgba(2,8,20,0.48)] sm:p-5"
@@ -187,16 +164,11 @@ const Testimonials = () => {
         {/* CTA strip */}
         <div className="mt-4 flex flex-col gap-4 rounded-2xl border border-[#1e2d48] bg-[linear-gradient(135deg,rgba(16,24,44,0.95),rgba(9,14,27,0.95))] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-lg font-extrabold text-[#f5f7ff]">
-              Join 50,000+ happy customers
-            </p>
-            <p className="mt-0.5 text-sm text-[#8897b5]">
-              Order today and leave your own review. Your feedback makes us
-              better every day.
-            </p>
+            <p className="text-lg font-extrabold text-[#f5f7ff]">{cta.title}</p>
+            <p className="mt-0.5 text-sm text-[#8897b5]">{cta.description}</p>
           </div>
           <button className="shrink-0 rounded-full bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] px-7 py-3 text-sm font-black text-[#071510] shadow-[0_8px_22px_rgba(99,230,190,0.32)] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110">
-            Order &amp; Review
+            {cta.buttonText}
           </button>
         </div>
       </div>

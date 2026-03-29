@@ -1,22 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
-  FaBars,
-  FaBolt,
-  FaCartShopping,
-  FaCheck,
-  FaCircleCheck,
-  FaCopy,
-  FaGear,
-  FaHeart,
-  FaMagnifyingGlass,
-  FaMinus,
-  FaPlus,
-  FaRightFromBracket,
-  FaSpinner,
-  FaTrash,
-  FaUser,
-  FaXmark,
+    FaBars,
+    FaBolt,
+    FaBowlFood,
+    FaCartShopping,
+    FaCheck,
+    FaCircleCheck,
+    FaCopy,
+    FaFire,
+    FaGear,
+    FaHeart,
+    FaMagnifyingGlass,
+    FaMinus,
+    FaPlus,
+    FaRightFromBracket,
+    FaSpinner,
+    FaStar,
+    FaTrash,
+    FaUser,
+    FaXmark,
 } from "react-icons/fa6";
 
 const NAV_LINKS = ["Home", "Menu", "Food", "About"];
@@ -59,6 +62,11 @@ const NavBar = ({
   const navRef = useRef(null);
   const orderNumberCopyTimerRef = useRef(null);
   const clearCartTimerRef = useRef(null);
+  const searchDebounceRef = useRef(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
   const allCategories = categories ?? [];
 
   const totalItems = addToCartItems.reduce(
@@ -86,6 +94,7 @@ const NavBar = ({
     setFavoriteOpen(false);
     setUserOpen(false);
     setMobileSearchOpen(false);
+    setSearchDropdownOpen(false);
   };
 
   const openCheckout = () => {
@@ -129,33 +138,33 @@ const NavBar = ({
     }
   };
 
-  const handleMenuLinkClick = (link) => {
-    if (link === "Menu") {
+  // fromMobile=true: close everything and scroll to the section.
+  // fromMobile=false + link === "Menu": toggle the desktop categories dropdown.
+  const handleMenuLinkClick = (link, fromMobile = false) => {
+    if (!fromMobile && link === "Menu") {
+      // Desktop "Menu" toggles the categories dropdown
       setCategoriesOpen((prev) => !prev);
       setCartOpen(false);
       setFavoriteOpen(false);
       setUserOpen(false);
       setMobileSearchOpen(false);
+      setSearchDropdownOpen(false);
       return;
     }
 
+    // All other cases (mobile or non-Menu links): close everything then scroll
     setCategoriesOpen(false);
     setCartOpen(false);
     setFavoriteOpen(false);
     setUserOpen(false);
+    setMobileMenuOpen(false);
     setMobileSearchOpen(false);
+    setSearchDropdownOpen(false);
 
-    if (link === "Home") {
-      scrollToSection("hero-section");
-    }
-
-    if (link === "Food") {
-      scrollToSection("menu-items-section");
-    }
-
-    if (link === "About") {
-      scrollToSection("how-it-works-section");
-    }
+    if (link === "Home") scrollToSection("hero-section");
+    if (link === "Menu") scrollToSection("menu-section");
+    if (link === "Food") scrollToSection("menu-items-section");
+    if (link === "About") scrollToSection("about-section");
   };
 
   const handleCategorySelect = (categoryName) => {
@@ -215,6 +224,9 @@ const NavBar = ({
       }
       if (clearCartTimerRef.current) {
         clearTimeout(clearCartTimerRef.current);
+      }
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current);
       }
     };
   }, []);
@@ -276,6 +288,184 @@ const NavBar = ({
     }, 350);
   };
 
+  // ── Search helpers ──────────────────────────────────────────────────────────
+  const getSearchItemPrice = (id) => {
+    let hash = 0;
+    for (let i = 0; i < id.length; i += 1) {
+      hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+    }
+    return (hash % 1901) + 100;
+  };
+
+  const getSearchItemRating = (id) => {
+    let hash = 0;
+    const key = id + "rating";
+    for (let i = 0; i < key.length; i += 1) {
+      hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+    }
+    return (3.5 + (hash % 16) / 10).toFixed(1);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+    setSearchResults([]);
+    setSearchDropdownOpen(false);
+    setSearchLoading(false);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+  };
+
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    if (query.trim().length < 2) {
+      setSearchResults([]);
+      setSearchDropdownOpen(false);
+      setSearchLoading(false);
+      return;
+    }
+    setSearchLoading(true);
+    setSearchDropdownOpen(true);
+    searchDebounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query.trim())}`,
+        );
+        const json = await res.json();
+        setSearchResults(json?.meals ?? []);
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 420);
+  };
+
+  const renderSearchDropdown = () => {
+    if (!searchDropdownOpen || searchQuery.trim().length < 2) return null;
+    return (
+      <div className="absolute left-0 right-0 top-full z-80 mt-2 overflow-hidden rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.99),rgba(9,14,27,0.99))] shadow-[0_20px_44px_rgba(2,8,20,0.7)]">
+        {searchLoading ? (
+          <div className="flex items-center gap-3 px-4 py-5">
+            <span className="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-[#2b3d5e] border-t-[#63e6be]" />
+            <p className="text-sm font-medium text-[#8897b5]">
+              Searching for{" "}
+              <span className="font-bold text-[#eef2ff]">
+                &#34;{searchQuery}&#34;
+              </span>
+              ...
+            </p>
+          </div>
+        ) : searchResults.length === 0 ? (
+          <div className="px-4 py-7 text-center">
+            <div className="pointer-events-none mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-[14px] border border-[#1c2b43] bg-[rgba(255,143,106,0.08)] text-[#ff8f6a]">
+              <FaMagnifyingGlass size={18} />
+            </div>
+            <p className="text-sm font-semibold text-[#c8d3eb]">
+              No results for{" "}
+              <span className="font-bold text-[#eef2ff]">
+                &#34;{searchQuery}&#34;
+              </span>
+            </p>
+            <p className="mt-1 text-xs text-[#5e6f94]">
+              Try something like &#34;Chicken&#34; or &#34;Pasta&#34;
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between gap-2 border-b border-[#111927] px-4 py-2.5">
+              <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-[#5e6f94]">
+                <FaBowlFood size={11} className="text-[#63e6be]" />
+                {searchResults.length} meal
+                {searchResults.length !== 1 ? "s" : ""} found
+              </div>
+              <button
+                onClick={clearSearch}
+                className="inline-flex items-center gap-1 text-[0.68rem] font-bold text-[#5e6f94] transition-colors hover:text-[#c8d3eb]"
+              >
+                <FaXmark size={10} />
+                Clear
+              </button>
+            </div>
+            <div className="max-h-68 divide-y divide-[#0d1524] overflow-y-auto [scrollbar-color:#1c2b43_transparent] [scrollbar-width:thin]">
+              {searchResults.slice(0, 8).map((meal) => {
+                const price = getSearchItemPrice(meal.idMeal);
+                const rating = getSearchItemRating(meal.idMeal);
+                return (
+                  <div
+                    key={meal.idMeal}
+                    className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-[rgba(99,230,190,0.04)]"
+                  >
+                    <div className="relative shrink-0">
+                      <img
+                        src={meal.strMealThumb}
+                        alt={meal.strMeal}
+                        className="h-13 w-13 rounded-xl border border-[#1c2b43] object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <span className="absolute -right-1 -top-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#1a2035] border border-[#2f354a]">
+                        <FaFire size={8} className="text-[#ff9a76]" />
+                      </span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-bold text-[#eef2ff]">
+                        {meal.strMeal}
+                      </p>
+                      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                        <span className="text-xs font-black text-[#63e6be]">
+                          ৳{price}
+                        </span>
+                        <div className="flex items-center gap-0.5">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <FaStar
+                              key={s}
+                              size={9}
+                              className={
+                                s <= Math.round(rating)
+                                  ? "text-[#ffd166]"
+                                  : "text-[#2e3d57]"
+                              }
+                            />
+                          ))}
+                          <span className="ml-0.5 text-[0.65rem] font-semibold text-[#5e6f94]">
+                            {rating}
+                          </span>
+                        </div>
+                        {meal.strCategory && (
+                          <span className="rounded-full border border-[#1c2b43] bg-[rgba(16,24,42,0.7)] px-1.5 py-0.5 text-[0.6rem] font-semibold text-[#5e6f94]">
+                            {meal.strCategory}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        onAddToCart(
+                          {
+                            idMeal: meal.idMeal,
+                            strMeal: meal.strMeal,
+                            strMealThumb: meal.strMealThumb,
+                          },
+                          price,
+                        );
+                        clearSearch();
+                      }}
+                      className="shrink-0 inline-flex translate-x-1 items-center gap-1.5 rounded-xl bg-[linear-gradient(135deg,#63e6be,#4dd9ac)] px-3 py-2 text-xs font-bold text-[#061510] opacity-0 shadow-[0_4px_12px_rgba(99,230,190,0.3)] transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 hover:brightness-110"
+                      aria-label="Add to cart"
+                    >
+                      <FaCartShopping size={11} />
+                      Add
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+  // ── End search helpers ───────────────────────────────────────────────────────
+
   return (
     <header
       ref={navRef}
@@ -317,19 +507,36 @@ const NavBar = ({
           <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
             <div className="relative hidden sm:block">
               <FaMagnifyingGlass
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5e6f94]"
+                className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-[#5e6f94]"
                 size={13}
               />
               <input
                 type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                onFocus={() => {
+                  if (searchQuery.trim().length >= 2)
+                    setSearchDropdownOpen(true);
+                }}
                 placeholder="Search food..."
-                className="rounded-full border border-[#1c2b43] bg-[rgba(16,24,42,0.7)] pl-9 pr-4 py-2 text-sm text-[#c8d3eb] placeholder:text-[#5e6f94] outline-none transition-all w-40 md:w-52 hover:border-[#32507a] hover:shadow-[0_0_0_3px_rgba(99,230,190,0.08)] focus:border-[#63e6be] focus:shadow-[0_0_0_3px_rgba(99,230,190,0.14)]"
+                className="rounded-full border border-[#1c2b43] bg-[rgba(16,24,42,0.7)] pl-9 pr-8 py-2 text-sm text-[#c8d3eb] placeholder:text-[#5e6f94] outline-none transition-all w-40 md:w-52 hover:border-[#32507a] hover:shadow-[0_0_0_3px_rgba(99,230,190,0.08)] focus:border-[#63e6be] focus:shadow-[0_0_0_3px_rgba(99,230,190,0.14)]"
               />
+              {searchQuery && (
+                <button
+                  onClick={clearSearch}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5e6f94] transition-colors hover:text-[#c8d3eb]"
+                  aria-label="Clear search"
+                >
+                  <FaXmark size={11} />
+                </button>
+              )}
+              {renderSearchDropdown()}
             </div>
 
             <div className="relative">
+              {/* Desktop: text + icon button (lg+) */}
               <button
-                className="relative hidden lg:inline-flex items-center gap-2 rounded-full border border-[#1c2b43] bg-[rgba(16,24,42,0.7)] px-3 py-2 text-sm font-semibold text-[#c8d3eb] transition-all hover:border-[#63e6be] hover:text-[#63e6be] hover:shadow-[0_0_0_3px_rgba(99,230,190,0.08)]"
+                className="relative hidden lg:inline-flex items-center gap-2 rounded-full border border-[#1c2b43] bg-[rgba(16,24,42,0.7)] px-3 py-2 text-sm font-semibold text-[#c8d3eb] transition-all hover:border-[#ff8f6a] hover:text-[#ff8f6a] hover:shadow-[0_0_0_3px_rgba(255,143,106,0.08)]"
                 onClick={() => {
                   setFavoriteOpen((prev) => !prev);
                   setCartOpen(false);
@@ -337,6 +544,7 @@ const NavBar = ({
                   setMobileMenuOpen(false);
                   setUserOpen(false);
                   setMobileSearchOpen(false);
+                  setSearchDropdownOpen(false);
                 }}
                 aria-label="Favorites"
               >
@@ -349,8 +557,9 @@ const NavBar = ({
                 )}
               </button>
 
+              {/* Mobile/tablet: icon-only button (below lg) */}
               <button
-                className="relative hidden sm:grid lg:hidden h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-full border border-[#1c2b43] bg-[rgba(16,24,42,0.7)] text-[#c8d3eb] hover:border-[#ff8f6a] hover:text-[#ff8f6a] transition-colors"
+                className="relative grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-full border border-[#1c2b43] bg-[rgba(16,24,42,0.7)] text-[#c8d3eb] hover:border-[#ff8f6a] hover:text-[#ff8f6a] transition-colors lg:hidden"
                 onClick={() => {
                   setFavoriteOpen((prev) => !prev);
                   setCartOpen(false);
@@ -358,26 +567,7 @@ const NavBar = ({
                   setMobileMenuOpen(false);
                   setUserOpen(false);
                   setMobileSearchOpen(false);
-                }}
-                aria-label="Toggle favorites"
-              >
-                <FaHeart size={14} />
-                {totalFavorites > 0 && (
-                  <span className="absolute -right-1 -top-1 grid h-4.5 min-w-4.5 place-items-center rounded-full bg-[#ff8f6a] px-1 text-[0.58rem] font-black text-[#071510]">
-                    {totalFavorites}
-                  </span>
-                )}
-              </button>
-
-              <button
-                className="relative grid h-9 w-9 place-items-center rounded-full border border-[#1c2b43] bg-[rgba(16,24,42,0.7)] text-[#c8d3eb] hover:border-[#ff8f6a] hover:text-[#ff8f6a] transition-colors sm:hidden"
-                onClick={() => {
-                  setFavoriteOpen((prev) => !prev);
-                  setCartOpen(false);
-                  setCategoriesOpen(false);
-                  setMobileMenuOpen(false);
-                  setUserOpen(false);
-                  setMobileSearchOpen(false);
+                  setSearchDropdownOpen(false);
                 }}
                 aria-label="Toggle favorites"
               >
@@ -477,6 +667,7 @@ const NavBar = ({
                 setCartOpen(false);
                 setFavoriteOpen(false);
                 setUserOpen(false);
+                setSearchDropdownOpen(false);
               }}
               aria-label="Toggle search"
             >
@@ -781,14 +972,31 @@ const NavBar = ({
           <div className="container mx-auto px-4 py-3">
             <div className="relative">
               <FaMagnifyingGlass
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5e6f94]"
+                className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-[#5e6f94]"
                 size={13}
               />
               <input
                 type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                onFocus={() => {
+                  if (searchQuery.trim().length >= 2)
+                    setSearchDropdownOpen(true);
+                }}
                 placeholder="Search food..."
-                className="w-full rounded-full border border-[#1c2b43] bg-[rgba(16,24,42,0.7)] pl-9 pr-4 py-2.5 text-sm text-[#c8d3eb] placeholder:text-[#5e6f94] outline-none transition-all hover:border-[#32507a] focus:border-[#63e6be] focus:shadow-[0_0_0_3px_rgba(99,230,190,0.14)]"
+                autoFocus
+                className="w-full rounded-full border border-[#1c2b43] bg-[rgba(16,24,42,0.7)] pl-9 pr-8 py-2.5 text-sm text-[#c8d3eb] placeholder:text-[#5e6f94] outline-none transition-all hover:border-[#32507a] focus:border-[#63e6be] focus:shadow-[0_0_0_3px_rgba(99,230,190,0.14)]"
               />
+              {searchQuery && (
+                <button
+                  onClick={clearSearch}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5e6f94] transition-colors hover:text-[#c8d3eb]"
+                  aria-label="Clear search"
+                >
+                  <FaXmark size={11} />
+                </button>
+              )}
+              {renderSearchDropdown()}
             </div>
           </div>
         </div>
@@ -801,13 +1009,11 @@ const NavBar = ({
               {NAV_LINKS.map((link, i) => (
                 <li key={link}>
                   <button
-                    onClick={() => handleMenuLinkClick(link)}
+                    onClick={() => handleMenuLinkClick(link, true)}
                     className={`w-full text-left rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                      link === "Menu" && categoriesOpen
+                      i === 0
                         ? "text-[#63e6be] bg-[rgba(99,230,190,0.08)]"
-                        : i === 0
-                          ? "text-[#63e6be] bg-[rgba(99,230,190,0.08)]"
-                          : "text-[#8897b5] hover:text-[#f5f7ff] hover:bg-[rgba(255,255,255,0.05)]"
+                        : "text-[#8897b5] hover:text-[#f5f7ff] hover:bg-[rgba(255,255,255,0.05)]"
                     }`}
                   >
                     {link}

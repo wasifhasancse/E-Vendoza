@@ -1,0 +1,82 @@
+{
+  "meta": {
+    "eyebrow": "Customer Reviews",
+    "titleLineOne": "What Our Customers",
+    "titleHighlight": "Are Saying",
+    "ratingText": "4.9 / 5.0",
+    "reviewCount": "12,500+ Reviews"
+  },
+  "cta": {
+    "title": "Join 50,000+ happy customers",
+    "description": "Order today and leave your own review. Your feedback makes us better every day.",
+    "buttonText": "Order & Review"
+  },
+  "reviews": [
+    {
+      "id": 1,
+      "name": "Fatema Khanam",
+      "role": "Regular Customer · Dhaka",
+      "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80",
+      "rating": 5,
+      "title": "Fastest delivery in town!",
+      "body": "I ordered during peak hours and the food was still at my door in under 30 minutes, piping hot. The tracking feature is a game-changer — I could see exactly where my rider was!",
+      "tag": "Verified Order",
+      "accentColor": "#63e6be"
+    },
+    {
+      "id": 2,
+      "name": "Rahim Uddin",
+      "role": "Food Enthusiast · Chittagong",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80",
+      "rating": 5,
+      "title": "Great variety, zero hassle",
+      "body": "The category filter makes it so easy to find exactly what I'm craving. Found a hidden gem biryani place I never knew existed. The packaging was spotless — will 100% reorder.",
+      "tag": "Top Reviewer",
+      "accentColor": "#ffd166"
+    },
+    {
+      "id": 3,
+      "name": "Lamia Sultana",
+      "role": "Working Professional · Sylhet",
+      "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80",
+      "rating": 5,
+      "title": "My daily lunch partner",
+      "body": "I order lunch every weekday. The weekend 20% deal saves me a ton each month. App is smooth, payment with bKash is instant, and customer support actually responds in minutes.",
+      "tag": "Daily Customer",
+      "accentColor": "#ff8f6a"
+    },
+    {
+      "id": 4,
+      "name": "Arif Hossain",
+      "role": "Student · Rajshahi",
+      "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80",
+      "rating": 5,
+      "title": "Super affordable for students",
+      "body": "Free first delivery and daily promo codes keep my food budget in check. The portions are generous and the food quality matches the restaurant photos — no disappointment at all.",
+      "tag": "Verified Order",
+      "accentColor": "#a78bfa"
+    },
+    {
+      "id": 5,
+      "name": "Nusrat Jahan",
+      "role": "Homemaker · Comilla",
+      "avatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=120&q=80",
+      "rating": 5,
+      "title": "Even my kids love placing orders",
+      "body": "The interface is so simple that my 10-year-old can browse and pick a meal without help. The live order card on the homepage is a brilliant touch — very visual and fun to use.",
+      "tag": "Family User",
+      "accentColor": "#63e6be"
+    },
+    {
+      "id": 6,
+      "name": "Shakil Ahmed",
+      "role": "Software Engineer · Dhaka",
+      "avatar": "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=120&q=80",
+      "rating": 5,
+      "title": "Best payment integration",
+      "body": "I appreciate that Nagad and Rocket are supported alongside bKash. The checkout flow is clean and fast — I've never had a failed transaction. Great work on the tech side too!",
+      "tag": "Power User",
+      "accentColor": "#ff8f6a"
+    }
+  ]
+}

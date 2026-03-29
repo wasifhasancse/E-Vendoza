@@ -1,56 +1,63 @@
 import { useEffect, useMemo, useState } from "react";
 import { FaClock, FaMotorcycle, FaPlay, FaStar } from "react-icons/fa";
 import { FaBolt, FaCartShopping, FaShieldHalved } from "react-icons/fa6";
+import usePublicJson from "../../hooks/usePublicJson";
 
-const STATS = [
-  { value: "500+", label: "Restaurants" },
-  { value: "28 min", label: "Avg Delivery" },
-  { value: "50K+", label: "Orders/Day" },
-  { value: "4.9 ★", label: "App Rating" },
-];
+const FALLBACK_HERO_CONTENT = {
+  stats: [
+    { value: "500+", label: "Restaurants" },
+    { value: "28 min", label: "Avg Delivery" },
+    { value: "50K+", label: "Orders/Day" },
+    { value: "4.9 ★", label: "App Rating" },
+  ],
+  avatars: [
+    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",
+    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+    "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+  ],
+  howItWorks: [
+    {
+      step: "01",
+      icon: "clock",
+      accent: "#63e6be",
+      iconBg: "bg-[rgba(99,230,190,0.14)]",
+      borderTop: "border-t-[#63e6be]",
+      glow: "shadow-[0_0_22px_rgba(99,230,190,0.18)]",
+      title: "Choose Your Meal",
+      description:
+        "Browse 500+ restaurants across Bangladesh. Filter by cuisine, price, or rating — find exactly what you crave in seconds.",
+    },
+    {
+      step: "02",
+      icon: "motorcycle",
+      accent: "#ffd166",
+      iconBg: "bg-[rgba(255,209,102,0.14)]",
+      borderTop: "border-t-[#ffd166]",
+      glow: "shadow-[0_0_22px_rgba(255,209,102,0.16)]",
+      title: "Fast Delivery",
+      description:
+        "Verified local riders pick up your order and deliver it piping-hot to your door — average time just 28 minutes.",
+    },
+    {
+      step: "03",
+      icon: "shield",
+      accent: "#ff8f6a",
+      iconBg: "bg-[rgba(255,143,106,0.14)]",
+      borderTop: "border-t-[#ff8f6a]",
+      glow: "shadow-[0_0_22px_rgba(255,143,106,0.16)]",
+      title: "Safe & Hygienic",
+      description:
+        "Every order is hygienically packed, tracked live on the map, and quality-checked before it leaves the kitchen.",
+    },
+  ],
+};
 
-const AVATAR_URLS = [
-  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",
-  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
-  "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
-  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
-];
-
-const HOW_IT_WORKS = [
-  {
-    step: "01",
-    Icon: FaClock,
-    accent: "#63e6be",
-    iconBg: "bg-[rgba(99,230,190,0.14)]",
-    borderTop: "border-t-[#63e6be]",
-    glow: "shadow-[0_0_22px_rgba(99,230,190,0.18)]",
-    title: "Choose Your Meal",
-    description:
-      "Browse 500+ restaurants across Bangladesh. Filter by cuisine, price, or rating — find exactly what you crave in seconds.",
-  },
-  {
-    step: "02",
-    Icon: FaMotorcycle,
-    accent: "#ffd166",
-    iconBg: "bg-[rgba(255,209,102,0.14)]",
-    borderTop: "border-t-[#ffd166]",
-    glow: "shadow-[0_0_22px_rgba(255,209,102,0.16)]",
-    title: "Fast Delivery",
-    description:
-      "Verified local riders pick up your order and deliver it piping-hot to your door — average time just 28 minutes.",
-  },
-  {
-    step: "03",
-    Icon: FaShieldHalved,
-    accent: "#ff8f6a",
-    iconBg: "bg-[rgba(255,143,106,0.14)]",
-    borderTop: "border-t-[#ff8f6a]",
-    glow: "shadow-[0_0_22px_rgba(255,143,106,0.16)]",
-    title: "Safe & Hygienic",
-    description:
-      "Every order is hygienically packed, tracked live on the map, and quality-checked before it leaves the kitchen.",
-  },
-];
+const HOW_IT_WORKS_ICON_MAP = {
+  clock: FaClock,
+  motorcycle: FaMotorcycle,
+  shield: FaShieldHalved,
+};
 
 const DEFAULT_HERO_MEALS = [
   {
@@ -70,7 +77,17 @@ const DEFAULT_HERO_MEALS = [
 ];
 
 const Hero = ({ onAddToCart }) => {
+  const heroContent = usePublicJson("/data/hero.json", FALLBACK_HERO_CONTENT);
   const [heroFoods, setHeroFoods] = useState(DEFAULT_HERO_MEALS);
+  const statsData = Array.isArray(heroContent?.stats)
+    ? heroContent.stats
+    : FALLBACK_HERO_CONTENT.stats;
+  const avatarUrls = Array.isArray(heroContent?.avatars)
+    ? heroContent.avatars
+    : FALLBACK_HERO_CONTENT.avatars;
+  const howItWorksData = Array.isArray(heroContent?.howItWorks)
+    ? heroContent.howItWorks
+    : FALLBACK_HERO_CONTENT.howItWorks;
 
   useEffect(() => {
     let isMounted = true;
@@ -212,7 +229,7 @@ const Hero = ({ onAddToCart }) => {
 
             {/* Stats strip */}
             <div className="grid grid-cols-4 gap-2.5 max-w-sm">
-              {STATS.map((s) => (
+              {statsData.map((s) => (
                 <div
                   key={s.label}
                   className="rounded-xl border border-[#222d47] bg-[rgba(13,20,36,0.72)] px-2 py-3 text-center"
@@ -228,7 +245,7 @@ const Hero = ({ onAddToCart }) => {
             {/* Social proof */}
             <div className="flex items-center gap-3">
               <div className="avatar-group -space-x-4 rtl:space-x-reverse">
-                {AVATAR_URLS.map((src, i) => (
+                {avatarUrls.map((src, i) => (
                   <div key={i} className="avatar">
                     <div className="w-9 ring-2 ring-[#0e1525]">
                       <img src={src} alt={`Customer ${i + 1}`} />
@@ -383,8 +400,8 @@ const Hero = ({ onAddToCart }) => {
 
           {/* Step cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {HOW_IT_WORKS.map((item) => {
-              const Icon = item.Icon;
+            {howItWorksData.map((item) => {
+              const Icon = HOW_IT_WORKS_ICON_MAP[item.icon] ?? FaClock;
               return (
                 <article
                   key={item.title}

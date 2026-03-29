@@ -1,4 +1,9 @@
-import { FaArrowRightLong, FaBagShopping, FaCartPlus } from "react-icons/fa6";
+import {
+  FaArrowRightLong,
+  FaBagShopping,
+  FaCartPlus,
+  FaTag,
+} from "react-icons/fa6";
 
 const OfferCard = ({ offer, onAddToCart, onBuyNow, onViewDetails }) => {
   const cardMeal = offer.meal ?? {};
@@ -23,7 +28,7 @@ const OfferCard = ({ offer, onAddToCart, onBuyNow, onViewDetails }) => {
 
   return (
     <article
-      className="group relative isolate flex flex-col overflow-hidden rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] shadow-[0_12px_30px_rgba(2,8,20,0.32)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(2,8,20,0.46)]"
+      className="group relative flex flex-col rounded-2xl border border-[#1c2b43] bg-[linear-gradient(160deg,rgba(16,24,42,0.98),rgba(9,14,27,0.98))] shadow-[0_12px_30px_rgba(2,8,20,0.32)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_38px_rgba(2,8,20,0.46)]"
       style={{ borderTopColor: offer.borderAccent, borderTopWidth: 3 }}
     >
       <div
@@ -31,11 +36,11 @@ const OfferCard = ({ offer, onAddToCart, onBuyNow, onViewDetails }) => {
         style={{ background: offer.glowColor }}
       />
 
-      <div className="relative h-44 w-full overflow-hidden">
+      <div className="relative h-44 w-full overflow-hidden rounded-t-2xl">
         <img
           src={cardMeal.strMealThumb ?? offer.image}
           alt={cardMeal.strMeal ?? offer.title}
-          className="block h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+          className="block h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
           loading="lazy"
         />
         <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(9,14,27,0.12),rgba(9,14,27,0.68))]" />
@@ -78,6 +83,45 @@ const OfferCard = ({ offer, onAddToCart, onBuyNow, onViewDetails }) => {
           <div className="mt-2.5 inline-flex items-center rounded-full border border-[rgba(99,230,190,0.22)] bg-[rgba(99,230,190,0.08)] px-2.5 py-1 text-xs font-bold text-[#63e6be]">
             {offer.offerLabel}
           </div>
+        </div>
+
+        {/* Price display */}
+        <div className="flex items-center justify-between rounded-xl border border-[#1c2b43] bg-[rgba(10,16,30,0.5)] px-3.5 py-2.5">
+          <div className="flex flex-col">
+            <span className="text-[0.68rem] font-semibold uppercase tracking-widest text-[#5e6f94]">
+              Offer Price
+            </span>
+            <span
+              className="mt-0.5 text-[1.25rem] font-black leading-none"
+              style={{ color: offer.borderAccent }}
+            >
+              {offer.finalPrice === 0 ? "FREE" : `৳${offer.finalPrice}`}
+            </span>
+          </div>
+
+          {offer.basePrice !== offer.finalPrice && (
+            <div className="flex flex-col items-end gap-1">
+              <span className="text-[0.68rem] font-semibold uppercase tracking-widest text-[#5e6f94]">
+                Regular Price
+              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-bold text-[#7d8aa8] line-through">
+                  ৳{offer.basePrice}
+                </span>
+                <span
+                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.62rem] font-extrabold"
+                  style={{
+                    color: offer.borderAccent,
+                    background: `${offer.glowColor}`,
+                    border: `1px solid ${offer.borderAccent}44`,
+                  }}
+                >
+                  <FaTag size={8} />
+                  {offer.discount}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="mt-auto grid grid-cols-1 gap-2 sm:grid-cols-2">
